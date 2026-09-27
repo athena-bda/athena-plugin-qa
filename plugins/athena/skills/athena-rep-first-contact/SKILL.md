@@ -14,8 +14,8 @@ who this rep covers; this skill reads that back, checks it still fits, and turns
 **saved views the rep owns**, so from the next session on their standing questions re-run with one click.
 
 This is NOT the set-up skill. Set-up is the admin configuring the company and seeding each rep. This is
-the rep arriving to what was seeded, and it never writes the company context or the playbook — only the
-rep's own views (and, if they ask, their own context).
+the rep arriving to what was seeded, and it never writes the Company context or the Messaging playbook
+— only the rep's own views (and, if they ask, their own context).
 
 ## Before you start
 
@@ -46,30 +46,51 @@ first session is where a rep's whole mental model gets set:
 **If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the integration,
 that guidance is out of date.** The portal IS available; use it. Do not refuse on the strength of it.
 
+**Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
+`athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
+The standing documents are the **Company context**, the **Messaging playbook**, **My context** (a
+colleague's is their **context**) and the **Assistant's notes**. Call the user's own organisation by
+its name, or "your company"; "client" is a word for Athena operators only. **Say Intent Signals,
+whatever a field, facet, rule or source calls them.** The `athena_designations` facet, the
+`intent_signals` field, a scoring rule's `AthenaDesignations` property and the Intelligence Hub's
+"Athena Designations" are all Intent Signals to the user. Tool and field names never change; only
+what you say does.
+
+**Say what a section checked when it found nothing. Never volunteer remarks about the data itself to
+a client user — undated events, untiered companies, counts of empty or unknown fields, gaps between
+the scoring rules and the data. If the user asks, answer plainly.** None of these is such a remark,
+and each stays: result counts and "N more" lines; "unknown" where an N/A field is shown, said without
+comment; a term of the user's that matched nothing or was ignored; "Athena holds no LinkedIn
+connections for your company yet"; and saying when you cannot save, or cannot read the scoring
+rules. In a first session that means the counts behind each proposed view, and any term of their
+context that matched nothing, are said; how complete the data behind them is, is not.
+
 ## Step 1 — Read what was set up for this rep
 
 Call `athena_asset_get` three times:
 
-- `kind: user_context` — **this rep's patch**, defaulting to the caller. This is the one that matters.
-- `kind: company_context` — the company's own framing, so a suggested view fits how the company sells.
-- `kind: status` — their working notes, if any.
+- `kind: user_context` — **this rep's patch** (My context in the portal), defaulting to the caller.
+  This is the one that matters.
+- `kind: company_context` — the Company context: the client's own framing, so a suggested view fits
+  how they sell. Nothing in it, About us included, goes into a view's filter.
+- `kind: status` — their Assistant's notes, if any.
 
-`exists: false` on the **user context** is the important branch: nobody has set this rep up yet. Do not
+`exists: false` on **My context** is the important branch: nobody has set this rep up yet. Do not
 brief them on everything the company can see — an empty scope is the company's entire contact
-universe, which is not a briefing. Say plainly that no personal context exists yet, and offer to set one up (that is the
-set-up skill's job, and you can hand off to it). Stop here until there is a patch to work from.
+universe, which is not a briefing. Say plainly that their context has not been set up yet, and offer
+to set it up (that is the set-up skill's job, and you can hand off to it). Stop here until there is a
+patch to work from.
 
 ## Step 2 — Read the patch back, in plain terms
 
-Reflect the user context to them in their own words: the accounts they cover, the role types and
+Reflect their context to them in their own words: the companies they cover, the role types and
 seniority they sell to, their therapy/disease areas, their geography. Keep it to **their** patch — do
-not read the company context back as if it were theirs; that is the mistake that makes a first session
-feel generic.
+not read the Company context back as if it were theirs; that is the mistake that makes a first
+session feel generic.
 
 Then ask, in one line, whether it still fits — people change patches, and a first session is the natural
-moment to correct it. If they want it changed, that is a user-context edit (record it with
-`athena_asset_set`, `kind: user_context`, and note the rep's own function/title while you are there, so
-later outreach drafts can name the sender rather than leaving a placeholder).
+moment to correct it. If they want it changed, that is an edit to their own context: record it with
+`athena_asset_set`, `kind: user_context`.
 
 ## Step 3 — Propose a few views, grounded and counted
 
@@ -77,26 +98,34 @@ The point of this session is that the rep leaves with **standing questions saved
 saved filter that re-runs live, which is exactly right for "my patch" questions whose answer moves as the
 data does — unlike a list, which freezes membership.
 
-Propose **two to four**, no more, each drawn straight from the user context.
+Propose **two to four**, no more, each drawn straight from their context.
 
-**Every view's filter is built from the context's Scope and Exclusions only** — the accounts
-(`account_names`), role types and seniority they cover, plus the values they named as unwanted.
-Therapy areas, disease areas, geographical remits, countries, intent signals and brands are
-**Priorities**: they decide what the rep looks at first, never who is in the view. That holds for
-every view you propose, not only the first. A view narrowed by a priority quietly stops showing
-people the rep is meant to cover, and a saved view is where that failure lives longest — it re-runs
-every time they open the portal, and nothing in it says who is missing.
+**Every view's filter is built from the context's Scope and Exclusions only** — the companies they
+cover (`account_names`), the role types and seniority they sell to, plus the values they named as
+unwanted. The very high priority companies, company tiers, therapy areas, disease areas,
+geographical remits, countries, Intent Signals and brands are **Priorities**: they decide what the
+rep looks at first, never who is in the view. That holds for every view you propose, not only the
+first. A view narrowed by a priority quietly stops showing people the rep is meant to cover, and a
+saved view is where that failure lives longest — it re-runs every time they open the portal, and
+nothing in it says who is missing.
+
+A company under Priorities is never moved into a filter, even when Scope names no companies at all —
+Scope without companies means every company. A context that names companies under a heading of its
+own, neither Scope, Priorities nor Exclusions, does not say which of them the rep covers: ask them
+once, before you build any view, and offer to update their context with the answer.
 
 Good candidates:
 
-- **Their whole patch** — their accounts, role types and seniority, and nothing else. If the context
-  names accounts, a "whole patch" view without them is not their patch; if it narrows by remit or
-  therapy area, it is not their patch either.
+- **Their whole patch** — the companies they cover, their role types and seniority, and nothing
+  else. If Scope names companies, a "whole patch" view without them is not their patch; if it narrows
+  by remit or therapy area, it is not their patch either.
 - **Their priority slice** — the same cut ORDERED by standardised score, with the tier name shown
   beside each. Ordered, not filtered. Do not build a view that filters on a tier name; a tier is a
   label, and people just outside the top one are often exactly who they want.
-- **Their named accounts** — if the context names specific accounts, a cut scoped to those. Accounts
-  are Scope, so this one narrows legitimately.
+- **Their named companies** — if Scope names specific companies, a cut scoped to those. Companies
+  under Scope are the ones they cover, so this one narrows legitimately. The very high priority
+  companies under Priorities are not: a view narrowed to just those is a priority used as a filter,
+  and follows the rule below.
 
 **A priority becomes a filter only when the rep asks for that cut, in those words, knowing what it
 leaves out.** "Save me a view of just my oncology people in Germany" is a fair request and a fair

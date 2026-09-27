@@ -1,6 +1,6 @@
 ---
 name: athena-set-up
-description: Set up or tune a client on Athena — record who the company sells to, who each person covers, and the messaging playbook they draft from, so every later Athena conversation is already scoped. Use when someone says "set me up", "set up Athena", "tune my context", "help me build my messaging playbook", or when a briefing comes back too broad because nobody has said what the user actually cares about.
+description: Set up or tune Athena — record what your company sells and who it sells to, which companies each person covers, and the Messaging playbook you draft from, so every later Athena conversation is already scoped. Use when someone says "set me up", "set up Athena", "tune my context", "set up a colleague's context", "help me build my messaging playbook", or when a briefing comes back too broad because nobody has said what the user actually cares about.
 named-terms:
   briefing: Radar Briefing
   pickup-phrase: What's next on my radar
@@ -9,14 +9,18 @@ named-terms:
 
 # Set up / tune
 
-Athena works from four standing documents. This skill writes them:
+Athena works from four standing documents. This skill writes them, and these are the names the
+portal gives them:
 
-- **Company context** — who this company is, who they sell to, what they care about. Everyone in the
-  company reads it.
-- **User context** — one person's patch: their accounts, their role types, what they are working on.
-- **Playbook** — the messaging playbook outreach is drafted against.
-- **Status note** — an assistant's own working notes for one person, including where their last
+- **Company context** — who this client is, what they sell and who they sell to. It opens with
+  **About us**. Everyone at the client reads it.
+- **My context** (a colleague's is their **context**) — one person's patch: the companies they cover,
+  the role types they sell to, what they are working on.
+- **Messaging playbook** — the messaging outreach is drafted against.
+- **Assistant's notes** — an assistant's own working notes for one person, including where their last
   briefing got to.
+
+The tools call them `company_context`, `user_context`, `playbook` and `status`.
 
 Get these right once and every later conversation starts scoped. Get them wrong and every briefing
 answers a broader question than anyone asked.
@@ -51,6 +55,26 @@ everything that follows:
   named tier. When someone asks for a count, walk down the score ordering until you have that many
   and say each one's tier as you go — a High at 51 and a Medium at 50 are neighbours.
 
+**Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
+`athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
+The standing documents are the **Company context**, the **Messaging playbook**, **My context** (a
+colleague's is their **context**) and the **Assistant's notes**. Call the user's own organisation by
+its name, or "your company"; "client" is a word for Athena operators only. **Say Intent Signals,
+whatever a field, facet, rule or source calls them.** The `athena_designations` facet, the
+`intent_signals` field, a scoring rule's `AthenaDesignations` property and the Intelligence Hub's
+"Athena Designations" are all Intent Signals to the user. Tool and field names never change; only
+what you say does.
+
+**Say what a section checked when it found nothing. Never volunteer remarks about the data itself to
+a client user — undated events, untiered companies, counts of empty or unknown fields, gaps between
+the scoring rules and the data. If the user asks, answer plainly.** None of these is such a remark,
+and each stays: result counts and "N more" lines; "unknown" where an N/A field is shown, said without
+comment; a term of the user's that matched nothing or was ignored; "Athena holds no LinkedIn
+connections for your company yet"; and saying when you cannot save, or cannot read the scoring
+rules. In this interview that also means never telling the user how many values a facet holds, which
+companies have no tier, or where the scoring rules and the data disagree — Step 3 has the one
+exception, for Athena operators.
+
 **Use the user's other tools.** If they have their CRM, their drive or a research tool connected, use
 them. Athena is one source among several and works better beside the rest.
 
@@ -62,9 +86,13 @@ Read `you` and `writes_available` from `athena_orient`.
   a client admin setting their own company up, or doing it on a call with Athena. Do not ask for a
   company id; they have one and it is already applied.
 - **`is_auto_scoped` is false** — the user works across companies. They are an Athena operator, or a
-  client user who belongs to more than one company. Call `athena_company_list`, show them the
-  companies it returns, and ask which client this session is for. Pass that `company_id` on **every**
-  subsequent call. Do not guess an id and do not carry one over from an earlier conversation.
+  client user who belongs to more than one company. Call `athena_company_list` and ask which one this
+  session is for, by name, from that list: an operator is choosing a client ("Northwind or
+  Halcyon?"); a client user is choosing between their own workspaces ("Brightwater, Athena BDA or
+  Halcyon?"). Never ask a client user which "company" — to them a company is a pharma company. If
+  they have already named one ("in Northwind"), take it from the list rather than asking again. Pass
+  that `company_id` on **every** subsequent call, `athena_team_find` included. Do not guess an id and
+  do not carry one over from an earlier conversation.
 - **Whether you can save the documents** — the four documents are published with `athena_asset_set`,
   so the write family that matters here is **`writes_available.assets`**, not `lists` or `views`. Read
   it as three cases, and do not collapse them:
@@ -72,25 +100,30 @@ Read `you` and `writes_available` from `athena_orient`.
     multi-company user). This is **not** a refusal. Choose a company first (the bullet above), and let
     the company-scoped tools answer: `athena_asset_get` returns `can_edit` per document. Do not tell
     the user you cannot save on the strength of an undetermined answer.
-  - **`is_determined` is true and `assets` is false** — you genuinely cannot publish these documents
-    from this connection. Say so at the START, before the interview, not after it. Run the interview
-    anyway if the user wants — the answers are still useful — but tell them the documents will need
-    saving from a connection that can write, and do not end the session implying anything was recorded.
+  - **`is_determined` is true and `assets` is false** — this user cannot publish the Company context
+    or anyone else's context from this connection (their own context they can still change). Say so
+    at the START, before the interview, not after it. Run the interview anyway if the user wants — the
+    answers are still useful — but tell them the documents will need publishing by someone who can,
+    and do not end the session implying anything was recorded. If they want a colleague's context,
+    still call `athena_team_find` (Step 6): its refusal names the people who can publish it.
   - **`is_determined` is true and `assets` is true** — you can publish. Proceed.
 
-If someone from Athena is running this for a client, everything below is identical. The documents land
-in the client's company, and the people in that company read them from their next session.
+**Note whether this is an Athena operator session** — `athena_orient`'s `you` says when the caller
+is acting as an Athena operator. Two lines below are for operators only: one about scoring rules that
+match nothing in the data (Step 3), and one about the Key Companies list (Step 4). Everything else is
+identical when someone from Athena runs this for a client: the documents land in the client's
+company, and the people in that company read them from their next session.
 
 ## Step 2 — Ground the vocabulary before you ask about it
 
-Call `athena_filter_options_get` for `contact`, and again for `account` if the conversation is going
-to reach accounts.
+Call `athena_filter_options_get` for `contact`, and again for `account` — the companies topic needs
+the account `tiers` facet.
 
 This is not a formality. The values are live and differ per company: a therapy area or tier that
 exists for one client may not exist for another, and a term the user says confidently may match
 nothing here. Read each facet's flags as well as its values — a facet reporting `is_empty` is a
 question not worth asking, and a facet reporting `is_truncated` is a sample you must not treat as the
-whole vocabulary.
+whole vocabulary. The flags steer what you ask; they are not something to tell the user.
 
 Two facets are worth reading before the interview even starts:
 
@@ -102,20 +135,33 @@ Two facets are worth reading before the interview even starts:
 
 Call `athena_scoring_rules_get` before you ask anything. It returns the scoring rules set up for this
 client: which values of which properties earn points, and which values rule a contact out entirely.
-Those are decisions the client has already made, and starting from them turns the interview into
-confirmation and correction — which people are far better at than invention.
+Each row carries the `property`, its `property_label` — the portal's own name for it — and the
+`option`. Those are decisions the client has already made, and starting from them turns the
+interview into confirmation and correction — which people are far better at than invention.
 
-**If it returns rules**, read them and propose. Say what the rules already decide — "the scoring set
-up for you ranks Neurology, Oncology and Rare Diseases highest, rules out eleven role types, and
-marks Latin America, the Middle East and Africa down; we can change any of it" — and ask the user to
-confirm or correct each one. Where what the user says contradicts what the rules do, say so plainly
-and ask which is right: that contradiction is one of the most useful things this conversation can
-surface.
+**If it returns rules, use them to propose, never to recite.** Topic by topic, turn the values the
+rules score into a short, obvious shortlist the user can accept, reject or tweak: "From your lead
+score criteria it looks like Market Access, Medical Affairs, Procurement and Launch Excellence are the
+role types you care about — is that right, any to add?" Say the `property_label` (Role Type, Intent
+Signals), never the `property`, and quote each `option` verbatim. In the interview, never read out a
+score, never list the values the rules mark as unwanted, and never remark to a client user on gaps
+between the rules and the data.
 
-**A ruled-out value is not an exclusion you may apply on their behalf.** Present it as what it is —
-"your scoring marks these as unwanted, so someone carrying only one of them is ruled out; someone who
-also carries a scored value is kept" — and still ask topic 4's exclusion question separately. An
-exclusion comes from what the user says they do not want, never from a rule row.
+**Propose only values that exist in the data.** Before a scored value goes into a suggestion, check it
+against the facets from Step 2, or with `athena_filter_draft`. A value the rules score but no contact
+here carries is left out of the suggestion, without comment.
+
+**If the user asks what the rules say**, that is a different question, and it gets a plain answer:
+read every row back grouped by `property_label`, each `option` quoted verbatim with what the rule does
+to it — its score, or that it rules a person out — and no tier thresholds.
+
+**In an Athena operator session**, you may add one line for Athena about scoring rules that match
+nothing in the data: "For Athena: the rules score R&D and Clinical, but no role type here carries
+either, so those points never land." Once, and never in a client user's session.
+
+**A ruled-out value is not an exclusion you may apply on their behalf.** An exclusion comes from what
+the user says they do not want, never from a rule row — so ask topic 4's exclusion question on its
+own, whatever the rules mark as unwanted.
 
 **If it returns no rules**, or says it could not read them in full, say so in one line and run the
 interview cold, from topic 1. That is a normal state, not a fault. It never means the client has not
@@ -126,7 +172,7 @@ Once a topic is confirmed, a count is still worth putting in front of them: draf
 
 Two limits to be straight about either way:
 
-- The rules do not usually carry accounts or brands. Those topics are real questions every time.
+- The rules do not usually carry companies or brands. Those topics are real questions every time.
 - You can read what the scoring decided; you cannot change how it is calculated in this conversation.
   If the user wants the weighting changed, use these words: **"these are the scoring rules set up for
   you, which we can change — ask Athena"**. Do not name the place the rules are authored and do not
@@ -140,17 +186,26 @@ conversation needs and not something you are given.
 
 ## Step 4 — The interview
 
+**Open by saying what this is for**, in one or two lines, before the first question: it records what
+they sell and who they sell to, so every later briefing and draft starts from that; and it writes
+their **Company context** first — the one everyone at their company shares — then each person's own
+**context**. Use their company's name. Something like: "This sets Athena up for Northwind, so every
+briefing and draft from here on starts from what you sell and who you sell to. I'll write Northwind's
+Company context first, then each person's own context." Whenever you move from one document to the
+next, say which one you are gathering now ("Now your own context").
+
 Cover all seven, in this order, every time. Ask each one; do not wait for the user to notice a topic
-was skipped. Where the scoring rules already answer a topic, put the answer in front of them to
-confirm rather than asking cold. If they answer several topics at once, take the lot and confirm each
+was skipped. Where the scoring rules already answer a topic, propose the shortlist from them (Step 3)
+rather than asking cold. If they answer several topics at once, take the lot and confirm each
 remaining one in a line rather than making them repeat themselves.
 
-1. **Accounts, and which of them are priorities.** The pharma companies they sell to, grounded
-   against the `account_names` facet — and then which of those matter most. The scoring rules do not
-   usually carry accounts, so this one is always a real question.
-2. **Role types and seniority.** Who they sell to inside those accounts.
-3. **Intent signals.** The triggers worth acting on. The facet is `athena_designations`; the words to
-   say out loud are Intent Signals.
+1. **Companies — the handful that matter most, and which company tiers.** Ask for a handful of very
+   high priority companies to track closely, not a long list, grounded as below. Then, inside the
+   same topic: "Which company tiers matter most — Big Pharma, Mid Pharma, Small Pharma, Biotech?",
+   offering the values exactly as the account `tiers` facet returns them. The scoring rules do not
+   usually carry companies, so this one is always a real question.
+2. **Role types and seniority.** Who they sell to inside those companies.
+3. **Intent Signals.** The triggers worth acting on — the `athena_designations` facet.
 4. **Geographical remit priorities, and anything to leave out.** Ask which remits are priorities, and
    say more than one can be chosen. Offer the values exactly as the facet returns them — Europe and
    European Region are two different values with two different meanings, and merging them loses the
@@ -159,7 +214,7 @@ remaining one in a line rather than making them repeat themselves.
 5. **Therapy areas.** Which ones matter most.
 6. **Disease areas that are very high priority.** This promotes people; it never narrows the
    briefing. Do not turn it into a filter that leaves anyone out.
-7. **Assets or brands** where the client works brand by brand.
+7. **Brands.** "Are there any very high priority brands you'd like to track?"
 
 Two rules run across all seven:
 
@@ -169,30 +224,95 @@ Two rules run across all seven:
 - **Never exclude on an unknown.** A contact whose remit, therapy area or disease area is N/A is a
   contact Athena has no information about. They stay in.
 
+**Ground the companies topic in Athena's Key Companies.** Athena's monthly tracking covers a list of
+Key Companies. Find it with `athena_list_find`, `entity_kind` `account`, `search` "Athena BDA Key
+Companies", and keep only a list whose name is exactly that.
+
+- **Exactly one such list is visible** — ground the topic in it. Any company you suggest comes from
+  its members. Check each company the user names with `athena_account_find`, filtering on `list_ids`
+  (that list's id) with a `search` for the name; if their short name finds nothing, try the name
+  Athena holds it under (Johnson & Johnson for J&J) before you decide it is not a member.
+  - A member: take it.
+  - Not a member: warn once, and keep it if they want it: "Athena's monthly tracking covers its Key
+    Companies, and Dyne isn't one of them, so it will show up less fully in briefings. Keep it
+    anyway?" If a member is plainly part of the same group — J&J for Janssen, which Athena holds as a
+    separate company — say so, once you have checked that it is a member. On a yes, keep it, under
+    the name Athena holds it by.
+  - Say a company's tier, or anything else about it, only from its member row, and say nothing about
+    a company that has no tier.
+- **No such list, or more than one** — run the topic without it, grounding each name against the
+  contact `account_names` facet, and never quote how many companies that facet holds. In an operator
+  session, say once, for Athena, that the Key Companies list is not visible to this client; in a
+  client user's session, say nothing about it.
+
+The list grounds this conversation and nothing else. It is never a filter: do not write it into any
+context, and do not narrow anything to it.
+
+**Company tiers are a priority, never a filter.** Write the answer as one sentence under Priorities
+("Small Pharma and Biotech matter most"), and as you record it, tell the user it guides your
+suggestions and your drafting — briefings do not sort by company tier. Do not promise a search or a
+briefing that uses it.
+
+Do not ask which lead score tier the briefings should cover. A lead score tier is a label on what the
+client's own scoring produced, not a question for the user — unlike the company tiers in topic 1.
+
+**About us.** After the seven topics, gather the Company context's opening: an **About us** of three
+to five sentences — what they do, who they serve, and what sets them apart. Offer to draft it from
+their website: "Shall I draft a short About us from your website?" Draft it only if you can actually
+read the page in this conversation — a tool you really have, and a page that really loads. If you
+cannot, say so, and ask them to paste the About text from their website or to tell you in a few
+sentences. Never write it from what you remember about the company, and never fill a gap with a
+guess. It is shown with the rest of the Company context before anything is published.
+
 Write what you learn into the context in three labelled parts, so a later skill can tell them apart:
-**Scope** (accounts, role types, seniority), **Priorities** (therapy areas, disease areas, remits,
-intent signals, brands) and **Exclusions** (only values the user named as unwanted). Briefings and
-views filter on Scope and Exclusions, and rank on Priorities.
+**Scope** (the companies covered, role types, seniority), **Priorities** (the very high priority
+companies, company tiers, therapy areas, disease areas, remits, Intent Signals, brands) and
+**Exclusions** (only values the user named as unwanted). Briefings and views filter on Scope and
+Exclusions, and rank on Priorities.
 
 **Every context takes those three headings — the company's, and every person's.** Use the three
-words themselves as headings, in that order, in every context this interview writes. A context
-written as prose, or under headings of your own, gives the skills that read it back nothing to tell
-apart, and they are the skills that decide who is in a briefing.
+words themselves as headings in every context this interview writes. The Company context is About us
+first, then the three headings — Scope, Priorities, Exclusions, in that order; a person's context has
+the three headings alone. A context written as prose, or under headings of your own, gives the skills
+that read it back nothing to tell apart, and they are the skills that decide who is in a briefing.
+Nothing reads About us as Scope, and nothing filters on it.
 
-**Accounts go under Scope, even when the user calls them their priority accounts.** Topic 1 asks
-which accounts matter most, and the answer to that is a sentence INSIDE Scope — "six accounts, and
-Pfizer and Novartis matter most" — never a heading of its own. A heading like "Priority accounts"
-makes the next skill read them as a priority and leave them out of the filter, and the briefing that
-comes back covers the whole company instead of the accounts the person actually sells into. Accounts
-narrow. Always.
+**Covered companies go under Scope; very high priority companies go under Priorities.** The handful
+from topic 1 goes under the Company context's Priorities. Its Scope names companies only if the user
+says their whole company sells to a fixed set of them. In a person's context, every company they
+actually cover goes under Scope — including the ones they call their priorities — because Scope is
+what narrows their briefing, and a covered company missing from it drops out of everything they see.
+Each of the company's very high priority companies that the person covers, and any other company they
+cover that they say matters most, goes under their Priorities as well, where it only ranks: it leads
+their briefing and never narrows it. A company under Priorities is never read as one they cover, so
+never file a covered company under Priorities alone, and never under a heading of your own such as
+"My companies". Covered companies narrow. Always.
 
-Do not ask which tier the briefings should cover. Tiers are a label on what the client's own scoring
-produced, not a question for the user.
+A Company context, in full — About us first, the handful under Priorities:
 
-Then a set of things that are **not portal filters** but belong in the company context as prose,
+```
+## About us
+Three to five sentences from their website or their own words: what they do, who they serve, and
+what sets them apart.
+
+## Scope
+Market Access and Medical Affairs, Director level and above.
+
+## Priorities
+Very high priority companies: Pfizer and Novartis.
+Company tiers: Small Pharma and Biotech matter most.
+Therapy areas: Oncology, Immunology.
+Intent Signals: the ones this client's own facet actually returns.
+Brands: only the very high priority ones they named.
+
+## Exclusions
+Local affiliate remits — named by them as unwanted.
+```
+
+Then a set of things that are **not portal filters** but belong in the Company context as prose,
 because they steer drafting and the intelligence side rather than a search: drug lifecycle stage,
-route of administration, company tier and sales tier. Write them down as sentences. Do not invent
-filter fields for them and do not promise a search that uses them.
+route of administration and sales tier, alongside the company tiers above. Write them down as
+sentences. Do not invent filter fields for them and do not promise a search that uses them.
 
 While you go, check each answer with `athena_filter_draft`. A term that comes back in `unresolved`
 was IGNORED — say so and offer the suggestions rather than writing a context term that will never
@@ -202,16 +322,16 @@ match anything. A term in `ambiguous` needs one question answered before it mean
 
 Never save a document the user has not seen. Show them:
 
-- the company context you intend to write, in full;
+- the Company context you intend to write, in full, About us first;
 - the number of people it describes, from `athena_filter_draft`, with any caveat the draft reported
   before the number rather than after it;
-- for each person you are seeding, the user context you intend to write for them and its count.
+- for each person you are seeding, the context you intend to write for them and its count.
 
 **Say what publishing means, once, before the first save.** In one line, in their words: this goes
-live for the whole company straight away, every version is kept with who wrote it and when, and it
-can be rolled back from the portal. The status note is the exception — that one is your own working
-notes for that person, it overwrites in place and keeps no history. Say it once, at the first save,
-not every time.
+live for everyone at their company straight away, every version is kept with who wrote it and when,
+and it can be rolled back from the portal. The Assistant's notes are the exception — those are your
+own working notes for that person, they overwrite in place and keep no history. Say it once, at the
+first save, not every time.
 
 Then save with `athena_asset_set`. Three things to know about saving:
 
@@ -227,90 +347,124 @@ Then save with `athena_asset_set`. Three things to know about saving:
   beside `can_edit: true` is the normal state and never a fault. Do not narrate it, and never read a
   field name out to the user.
 
+After each save, say it is live and give its version from the response.
+
 Documents are capped at 64 KiB of text. Over that the save is refused with the exact numbers and
 nothing is truncated — cut it down rather than hoping.
 
 ## Step 6 — Seed each person, and let them confirm
 
-Seeded user contexts are live as soon as they are written. Nobody has to accept them for the system
-to work — but the first time each person opens a conversation, their assistant should read their
+Seeded contexts are live as soon as they are written. Nobody has to accept them for the system to
+work — but the first time each person opens a conversation, their assistant should read their
 context back to them and offer to tune it. Say so when you seed: "each person's context is live now,
 and they can change their own whenever they want."
 
+**To seed a colleague, find them by name or email with `athena_team_find`. Never ask the user for an
+id.**
+
+- Search once with what the user called them: `search` set to the name or email, `offset` 0, `limit`
+  200 — and the client's `company_id` in an operator session.
+- A person is found only when that single response is untruncated — no `result_truncated` — and holds
+  exactly one row that is not the user themselves (`is_you` false). Then confirm the full name before
+  you write anything: "Richard Sloggett?" The search matches any part of a name or email, so
+  "Richard" alone is not yet a person.
+- Several such rows: ask which one they mean, by full name, and by email where two share a name.
+- A truncated response: ask for more of the name, or their email, and search again from offset 0.
+- Never identify anyone from a second or later page.
+- Nobody else matches: say they may not have a portal login yet — Athena adds users — and carry on
+  with the rest of the set-up.
+- Pass that row's `user_id` as `user_id` to `athena_asset_get` and `athena_asset_set`: only a
+  `user_id` this tool returned, never one you made up. The user's own context needs no id; it
+  defaults to them.
+
+**If `athena_team_find` is refused** (`permission_denied`), this user cannot see the team list. Say so
+plainly: only people who can set up your company's documents can see it. Name who can, as the
+refusal names them — people at their company by name, Athena's operators as "Athena" — and offer to
+draft the colleague's context here for one of them to publish. No error text, and never a pretend
+success.
+
+**If `athena_team_find` does not exist on this connection** — you call it and are told there is no
+such tool — you cannot find colleagues from here. Say so plainly, draft each colleague's context here
+as above, and tell the user it can be published from the portal instead: the Team section of the
+Assets page, by someone who can set up your company's documents.
+
+Ask which companies a person covers when you write their context, not in the companies topic — topic
+1 gathers only the company's handful — and put every one of them under their Scope. If they cover
+every company, say so under Scope in words ("All companies") and name none there; the company's
+handful still goes under their Priorities.
+
 Write each person's context in the same three labelled parts as the company's — **Scope**,
 **Priorities**, **Exclusions** — and use step 4's mapping field for field, not just its headings:
-**Scope is accounts, role types and seniority; Priorities is therapy areas, disease areas,
-geographical remits, intent signals and brands; Exclusions is only the values this person named as
-unwanted.** Nothing about seeding changes that mapping. It is easier to break here than in the
-company context, because the person you are writing about is usually not in the room to notice that
-their territory has been filed in the wrong part.
+**Scope is the companies this person covers, role types and seniority; Priorities is the very high
+priority companies among them, therapy areas, disease areas, geographical remits, Intent Signals and
+brands; Exclusions is only the values this person named as unwanted. Company tiers stay in the
+Company context only: they are the company's answer, not this person's.** Nothing about seeding
+changes that mapping. It is easier to break here than in the Company context, because the person you are
+writing about is usually not in the room to notice that their territory has been filed in the wrong
+part.
 
-**A remit under Scope silently narrows everything they will ever see.** The skills that read a user
-context FILTER on Scope and Exclusions, and RANK on Priorities. Write "Territory. Remits Europe,
-European Region and Global." under Scope and every briefing and every saved view that person gets is
-cut down to those three values — no error, no warning, and the global account they cover quietly
-stops appearing. A remit is a priority. So are therapy areas, disease areas, intent signals and
+**A remit under Scope silently narrows everything they will ever see.** The skills that read a
+person's context FILTER on Scope and Exclusions, and RANK on Priorities. Write "Territory. Remits
+Europe, European Region and Global." under Scope and every briefing and every saved view that person
+gets is cut down to those three values — no error, no warning, and everyone outside them quietly
+stops appearing. A remit is a priority. So are therapy areas, disease areas, Intent Signals and
 brands: each one under Scope removes people instead of ranking them, and a person's context is the
-one that decides whose briefing they get. Written as a paragraph, or with their accounts under a
-priorities heading, it hands them the whole company's briefing labelled as their own patch.
+one that decides whose briefing they get. Written as a paragraph, or with the companies they cover
+under Priorities alone, it hands them a briefing across every company, labelled as their own patch.
 
-Record each person's **function or title** in their user context (e.g. "VP, Medical Affairs"), not just
-the accounts and areas they cover. The drafting skill fills the sender line of an outreach email from it
-("I lead [function] at …"); a context that omits it leaves every draft with an unfilled placeholder.
-Put it on a line ABOVE the three headings, as the example does: it says who this person IS, and under
-Scope it reads as a seniority they sell to and filters their own briefing down to their own job title.
-
-A seeded user context, in full — accounts a plain list under Scope, remits under Priorities:
+A seeded person's context, in full — every company they cover a plain list under Scope, the company's
+very high priority ones among them under Priorities too, remits under Priorities:
 
 ```
-Function: VP, Medical Affairs.
-
 ## Scope
 - Pfizer
 - Novartis
 - AstraZeneca
 
-Pfizer and Novartis matter most. Medical Affairs and Market Access, Director level and above.
+Medical Affairs and Market Access, Director level and above.
 
 ## Priorities
+Very high priority companies: Pfizer and Novartis.
 Geographical remits: Europe, European Region, Global.
 Therapy areas: Oncology, Immunology.
 Disease areas: non-small cell lung cancer.
-Intent signals: the ones this client's own facet actually returns.
-Brands: only where they work brand by brand.
+Intent Signals: the ones this client's own facet actually returns.
+Brands: only the very high priority ones they named.
 
 ## Exclusions
 Local affiliate remits — named by her as unwanted.
 ```
 
 Europe and European Region are two values, not one, and both are listed under Priorities exactly as
-the facet returns them. The Exclusions line is there because she named it, not because a remit was
-left out of the priorities.
+the facet returns them. Pfizer and Novartis are under Scope because she covers them, and under
+Priorities because they are the company's very high priority companies. The Exclusions line is there
+because she named it, not because a remit was left out of the priorities.
 
-People can always edit their OWN context and their own status note. They cannot read each other's —
-that is by design, not a permission that can be granted, so do not offer it.
+People can always edit their OWN context and their own Assistant's notes. They cannot read each
+other's — that is by design, not a permission that can be granted, so do not offer it.
 
-## Step 7 — The playbook
+## Step 7 — The Messaging playbook
 
 **This one is optional, and it is the last thing we do — we can do it now or later.** Say that, and
 mean it. A client who wants to stop after their contexts are published has a working set-up.
 
-The playbook is what outreach gets drafted from, and it is paired with **Athena's email writing
-guide** on the Intelligence Hub connector. If the Hub is connected, call `get_email_writing_guide`
-before seeding the playbook and let it steer the interview; if it is not, build the playbook anyway
-and say the conditional messaging is worth revisiting with the guide to hand.
+The Messaging playbook is what outreach gets drafted from, and it is paired with **Athena's email
+writing guide** on the Intelligence Hub connector. If the Hub is connected, call
+`get_email_writing_guide` before seeding the playbook and let it steer the interview; if it is not,
+build the playbook anyway and say the conditional messaging is worth revisiting with the guide to
+hand.
 
 Lead with what it buys them, not with how it is structured: the more approved messaging they supply,
 the more every draft can be tailored to the person it is going to; without it drafts stay generic and
 say the same thing to everyone. Never say "Tier 1", "Tier 2" or "blocks" to the user — those are the
 guide's internal vocabulary and mean nothing to the person answering.
 
-Then make it concrete. Read the client's own `athena_designations` facet, tell them which signals
-actually appear across their contacts, and for each of the common ones ask what they would want said
-when it is present. Record which signals were deliberately left uncovered, and say plainly that a
-signal with nothing written for it is a hook their drafts will silently never use — so the choice is
-visible rather than an accident. (Read the guide's own handling of those signals from the guide each
-time; it is Athena's to change, not this skill's to remember.)
+Then make it concrete. Read the client's own `athena_designations` facet, tell them which Intent
+Signals actually appear across their contacts, and for each of the common ones ask what they would
+want said when it is present. Record which signals were deliberately left uncovered, and say plainly
+that a signal with nothing written for it is a hook their drafts will silently never use — so the
+choice is visible rather than an accident. (Read the guide's own handling of those signals from the
+guide each time; it is Athena's to change, not this skill's to remember.)
 
 **Ask for their material, and read it here.** The single most useful thing this step can do is work
 from what they already have: invite them to paste or attach approved messaging, case studies and
@@ -321,13 +475,14 @@ Seed the playbook with the structure Athena's template uses, and fill what the c
 you:
 
 1. **Company overview and baseline messaging** — what the company does, its differentiators, and two
-   or three baseline emails they are happy with.
+   or three baseline emails they are happy with. The Company context's About us is the starting
+   point; build on it rather than asking for it twice.
 2. **Conditional messaging by data point** — one piece of conditional messaging per therapy area,
-   disease area, role type, intent signal or brand where they want the framing to change.
+   disease area, role type, Intent Signal or brand where they want the framing to change.
 3. **Job change and conference guidance** — what to say to someone who has just moved, been promoted,
    or is speaking somewhere.
-4. **Company-specific guidance** — one piece per account where the framing should change: an existing
-   relationship, a prior pilot, something to avoid mentioning.
+4. **Company-specific guidance** — one piece per company they sell to where the framing should
+   change: an existing relationship, a prior pilot, something to avoid mentioning.
 
 Fill it from what they tell you and from the material they give you here — approved messaging, case
 studies, positioning, past proposals, their website. Read those in this conversation, or through
@@ -362,11 +517,12 @@ Two things not to rely on:
 
 ## Step 9 — Confirm what is live
 
-Close by saying, in plain terms, what now exists: the company context and its version, whose contexts
-were seeded, whether the playbook is started or finished, and whether a recurring run was created.
-Every document keeps its full history with an author and a timestamp against each version, and
-anything can be rolled back from the Athena portal — worth saying once, because it is what makes
+Close by saying, in plain terms, what now exists: the Company context and its version, whose contexts
+were seeded, whether the Messaging playbook is started or finished, and whether a recurring run was
+created. Every document keeps its full history with an author and a timestamp against each version,
+and anything can be rolled back from the Athena portal — worth saying once, because it is what makes
 direct publishing safe.
 
-One exception, and it needs saying: **the status note keeps no history.** Anything cleared from it is
-gone. If you are ever about to clear one, say "this cannot be undone" and get an explicit yes first.
+One exception, and it needs saying: **the Assistant's notes keep no history.** Anything cleared from
+them is gone. If you are ever about to clear them, say "this cannot be undone" and get an explicit yes
+first.

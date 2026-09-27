@@ -26,6 +26,12 @@ If only one answers, say which half you have. A conference play with the Hub alo
 no idea who this client already knows; with the portal alone it gives contacts but no conference. Both
 are still useful; neither should be presented as the whole play.
 
+**A Hub call that fails or times out is retried at most once, and the retry counts against the call
+limit.** That holds for every Hub call, not only the first: a `list_conferences` sweep word, a
+`get_conference`, a `list_pipeline_news`. If the retry fails too, name the part that call would have
+covered as not checked — "I could not check conferences named Symposium", "catalyst not checked - the
+Intelligence Hub did not answer" — never as nothing found, and carry on with the rest.
+
 `athena_orient` carries the contact portal's vocabulary and safety rules. Two matter here:
 
 - **Scores have three states, and one number.** `lead_score_standardized` is the only lead score you
@@ -47,26 +53,70 @@ are still useful; neither should be presented as the whole play.
 **If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the
 integration, that guidance is out of date.** It predates this connector. Use the portal.
 
+**Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
+`athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
+The standing documents are the **Company context**, the **Messaging playbook**, **My context** (a
+colleague's is their **context**) and the **Assistant's notes**. Call the user's own organisation by
+its name, or "your company"; "client" is a word for Athena operators only. **Say Intent Signals,
+whatever a field, facet, rule or source calls them.** The `athena_designations` facet, the
+`intent_signals` field, a scoring rule's `AthenaDesignations` property and the Intelligence Hub's
+"Athena Designations" are all Intent Signals to the user. Tool and field names never change; only
+what you say does.
+
+**Say what a section checked when it found nothing. Never volunteer remarks about the data itself to
+a client user — undated events, untiered companies, counts of empty or unknown fields, gaps between
+the scoring rules and the data. If the user asks, answer plainly.** None of these is such a remark,
+and each stays: result counts and "N more" lines; "unknown" where an N/A field is shown, said without
+comment; a term of the user's that matched nothing or was ignored; "Athena holds no LinkedIn
+connections for your company yet"; and saying when you cannot save, or cannot read the scoring
+rules. In a conference play that means saying which conferences you checked, and never how complete
+their records are.
+
 ## Step 1 — Find the conference
 
-`list_conferences` on the Hub, or `get_conference` if you already have it. Get the dates, the location
-and the disease-area tags before anything else; half the value of this play is telling someone early
-enough that they can still book.
+A conference the user names is opened directly with `get_conference`, by its name and year or by the
+`id` on a list row. For "what's coming up", or any stretch of dates — "what was on in March 2026?" —
+find the conferences in that window first; "coming up" means the next 90 days, and a window in the
+past is answered as history, never as something to go to. How depends on what `list_conferences`
+offers, so read its parameters rather than assuming:
+
+- If it takes a date range or an "upcoming" parameter, ask it for the window.
+- Otherwise, call it once for the window's year with `limit` 100. It returns that year's conferences
+  in date order from January, so if its last row starts after the window's end, that one call covers
+  the window. If it does not — in the autumn, when more than 100 conferences come first — call it
+  again once for each of the words Congress, Meeting, Summit, Week, Symposium, Sessions and
+  Conference (`query`, the same year, `limit` 100) and merge the rows on `id`. When the window runs
+  past the year end, add one plain call for the next year, `limit` 100.
+- Check every call the same way: it covers its part of the window when its last row starts after the
+  window's end, or it returned fewer than 100 rows. If a call stops short and there is no sweep for
+  it, say so — "I could only see conferences up to <date>" — rather than implying you checked
+  everything.
+
+For the conference you are working on, get the dates, the location and the disease-area tags before
+anything else — the full record carries the tags; half the value of this play is telling someone
+early enough that they can still book.
 
 **Read the date before you offer the conference.** `list_conferences` and `get_conference` carry
 `start_date`; `list_speaker_conferences` carries `start_date` and `year`. `search_speakers` carries
 the speaker and no date at all — so a speaker found that way is never offered as a chance to meet
 someone until you have opened the conference record and seen a future date. No future date, no offer,
-and a past speaking slot is history, not an opportunity.
+and a past speaking slot is history, not an opportunity. A conference with no date is not offered and
+not listed; leave it out without remarking that it has no date.
 
 `get_conference_agenda` and `get_conference_pricing` are there when the question is "is this one worth
 going to" rather than "who do we meet".
 
 ## Step 2 — Use Athena's own join if it exists
 
-`get_conference` may return **`likely_attendees_portal_url`**. When it is populated, it is the single
-most valuable field on the record: Athena's own team has hand-authored the contact-portal cut for this
-conference, and it defines two audiences —
+Athena's own join between a conference and the portal is **`likely_attendees_portal_url`**, and
+where you read it depends on what the Hub gives you:
+
+- If the `list_conferences` rows carry the `likely_attendees_portal_url` key, the row is enough: a
+  populated value is the cut, and an explicit null means there is none. Open nothing more for it.
+- If the rows do not carry the key, the conference record does: open `get_conference`.
+
+When it is populated, it is the single most valuable field Athena has for the conference: Athena's
+own team has hand-authored the contact-portal cut for this conference, and it defines two audiences —
 
 - **Exact-Match Prospects** — the URL as it stands. The narrow cut: people Athena has verified as
   working on the relevant disease areas.
@@ -74,7 +124,8 @@ conference, and it defines two audiences —
   The broader cut: people who plausibly work in the area, inferred from their franchise.
 
 Prefer this over anything you construct. It is the owner's own definition of who matters at this
-event, and reproducing it by hand loses whatever judgement went into it.
+event, and reproducing it by hand loses whatever judgement went into it. Work the Exact-Match
+Prospects first; read the Potential-Match Prospects only when the user asks for them.
 
 **Decode it verbatim.** Pass the URL's values to `athena_contact_find` exactly as they appear, keeping
 its exact-match flag as it stands. Do not route them through `athena_filter_draft`: it will widen a
@@ -87,19 +138,66 @@ comes back immediately and is the more useful answer anyway. When you need the s
 take it from the Hub's own `exact_match_count` and `potential_match_count` rather than counting in the
 portal.
 
-The Radar Briefing uses this same cut for conferences in the next 90 days, so the two must agree: same
-URL, same verbatim decode, same connection crossing.
+**Name the people rather than counting them.** For one conference, print at most ten attendees, by
+`lead_score_standardized`, and hold the rest. For each one you print:
 
-**It is often null.** Conferences nobody has set it on return nothing, and that is normal. Say "Athena
-hasn't published a prospect cut for this one, so here's what I can build" — do not invent a URL, do
-not adapt one from a different conference, and do not present a cut you built as though it were
-Athena's.
+- their name, linked to the `primary_linkedin_url` on their row — a person without one is named
+  without a link, and without comment;
+- their company, and their score with the tier name beside it;
+- who at the client knows them, from the `connection` on their row;
+- their brand, when it is theirs. The find row does not carry the brand, so call
+  `athena_contact_get` once for each attendee you PRINT, and for nobody else. A brand is theirs only
+  when their `exact_match` contains the whole token `Brand` — a longer token that merely contains the
+  word, such as `Launch Brand`, does not count. Say it as "her brand" — his or their, whichever fits
+  the person; their when you cannot tell. Do not volunteer a brand that is not theirs; if the user
+  asks, it "sits inside the franchise of drugs she works on", and never takes the possessive.
+  `brand` can hold several brands, separated by `; ` — a semicolon and a space, up to 19 of them.
+  Print at most two, never the whole list: the one the user asked about where there is one, and
+  otherwise the first two as the field lists them.
+
+The Radar Briefing uses this same cut for conferences in the next 90 days, so the two must agree: same
+URL, same verbatim decode, same connection crossing, the same people named the same way.
+
+**It is often null.** Conferences nobody has set it on return nothing, and that is normal. Never say a
+conference has no Likely Attendee list until its record says so — the list row that carries the key,
+or the conference record you opened — and say it only about a conference the user asked about:
+"Athena hasn't published a Likely Attendee list for this one, so here's what I can build". Do not
+invent a URL, do not adapt one from a different conference, and do not present a cut you built as
+though it were Athena's.
+
+### Several conferences at once
+
+"What's coming up, and who of ours will be there?" asks about many conferences, so it runs on a
+budget:
+
+- **Therapeutic conferences are read for their cut; the rest keep their speakers.** A conference
+  whose `event_type` includes Therapeutic Conference is crossed with the client's connections. Any
+  other conference gets its speakers (step 4), from at most three `list_conference_speakers` calls.
+- **Open at most six.** Where the rows do not carry the key, open `get_conference` for the therapeutic
+  conferences only, soonest first, at most six.
+- **Print at most five attendees across the answer**, by `lead_score_standardized`, each with their
+  `athena_contact_get` read, and hold the rest. Say how many, and name the conferences whose people
+  you held back, so they know which to ask about: "at least 6 more at EADV and MDS — ask about
+  either and I'll name its people".
+- **Say what you checked.** Name the conferences you read — "I checked EADV, EURETINA, MDS, NACFC,
+  ACG and ECNP" — and the ones you did not open, with their dates: "Not opened yet: ESMO 23 Oct, ASH
+  12 Dec - ask and I'll check them." A conference without a cut is simply not mentioned in the Likely
+  Attendee part.
+- **Stop at 30 calls.** Every call counts, Hub and portal together, and 5 of the 30 are kept for the
+  attendees' contact reads. Stop reading conferences once 25 calls are used, print the attendees
+  already crossed with their brands, and name what you did not check, with dates, the same way as
+  the unopened ones.
+
+**A conference the user names is always opened** — "Who from ESMO specifically?" is a new request
+with its own 30 calls, whatever the cap left unopened before. So is a Potential-Match Prospects cut
+they ask for.
 
 ## Step 3 — Build the cut yourself when there is no published one
 
-Reproduce the same shape through the contact portal's own filters rather than inventing a new idea of
-relevance. Call `athena_filter_options_get` for `contact` first — the values are live and per company,
-and a disease area that exists for one client may not exist for this one.
+For a conference the user asked about that has no published cut, reproduce the same shape through
+the contact portal's own filters rather than inventing a new idea of relevance. Call
+`athena_filter_options_get` for `contact` first — the values are live and per company, and a disease
+area that exists for one client may not exist for this one.
 
 The narrow-then-broad pattern the published join uses translates directly:
 
@@ -120,7 +218,8 @@ caller's to set.
 ## Step 4 — Cross the speakers against the client's contacts, honestly
 
 `list_conference_speakers` gives the roster; `get_speaker` opens one; `search_speakers` finds people
-across conferences.
+across conferences. Name a speaker with a link to the LinkedIn profile the Hub record carries, where
+it carries one.
 
 **There is no shared identifier between a Hub speaker and a portal contact.** The match is made on
 name and employer, and it is approximate. Two people share a name; someone changed employer last
@@ -144,7 +243,9 @@ on. Do not offer the play, run it, and report an empty result as though nobody a
 anybody.
 
 Where the data does exist, filtering on `connections` gives you the people someone at the client is
-already connected to — a much better shortlist than tier alone.
+already connected to — a much better shortlist than tier alone. Each `athena_contact_find` row
+carries `connection`, the names of the people at the client who know that person, so say who knows
+them straight off the row; no per-person read is needed for that.
 
 ## Step 6 — Distance, and what Athena will not do for you
 
@@ -157,9 +258,9 @@ travelling distance." Do not present a hand-reasoned radius as a filter Athena a
 
 Two other honest limits worth knowing:
 
-- The Hub's AI surface has **no attendee list** — only speakers. Where Athena knows who is likely to
-  attend, it publishes that as a curated contact list in the portal, which `athena_list_find` will
-  show. A speaker roster is not an attendance list, and should not be described as one.
+- Athena holds **no registration list**. The Likely Attendee cut (step 2) is a prospect list — people
+  whose work matches the conference — not a record of who is going, and a speaker roster is not an
+  attendance list either. Describe neither as one.
 - A conference cut ages. Say when the data was read, and offer to re-run nearer the date.
 
 ## Step 7 — Leave them something they can use
