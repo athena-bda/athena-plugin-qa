@@ -563,6 +563,13 @@ it stands is the exact-match cut, and it comes first. The potential-match cut �
 disease-area exact-match parameter removed — is read only when the user asks for it. Whole-list sizes
 come from the Hub's own `exact_match_count` and `potential_match_count`, never from a portal count.
 
+**Cross the conferences one at a time, never in parallel.** Send each conference's
+`athena_contact_find` only once the one before it has answered: crossings sent together can fail
+where the same crossings sent one after another answer. A crossing that fails or times out is
+retried at most once, on its own, and the retry counts against the call limit. If the retry fails
+too, name that conference as not checked — "I could not check MDS for your connections" — never as
+nothing found, and carry on with the rest.
+
 **Name the people rather than counting them.** Print at most five people in this section, Likely
 Attendees and speakers together, in the one order above — where a person's date is their
 conference's, soonest first — each under their conference and without a number, and any more you
@@ -588,6 +595,8 @@ of the briefing's `scope.applied_filter`, never the terms you submitted, and nam
 same way — print at most ten, each with its `athena_contact_get` read, except an attendee who already
 has a number in this briefing, who is named with it and nothing more — "Katie Hernandez (7)" —
 counts among the ten, and needs no read. A potential-match cut they ask for is a new request too.
+A named conference's crossing follows the section's rule: one conference at a time, never in
+parallel, a failed crossing retried at most once, and one that fails again named as not checked.
 
 ### Section 3: the pipeline edition's brands and catalysts
 

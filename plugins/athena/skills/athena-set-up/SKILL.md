@@ -261,11 +261,14 @@ client's own scoring produced, not a question for the user — unlike the compan
 
 **About us.** After the seven topics, gather the Company context's opening: an **About us** of three
 to five sentences — what they do, who they serve, and what sets them apart. Offer to draft it from
-their website: "Shall I draft a short About us from your website?" Draft it only if you can actually
-read the page in this conversation — a tool you really have, and a page that really loads. If you
-cannot, say so, and ask them to paste the About text from their website or to tell you in a few
-sentences. Never write it from what you remember about the company, and never fill a gap with a
-guess. It is shown with the rest of the Company context before anything is published.
+their website: "Shall I draft a short About us from your website?" If you do not have its address,
+ask for it. Draft it only from the page itself, read in this conversation. **A web tool that is
+listed but not yet loaded is a tool you have:** load it — through the tool search, where the session
+has one — and try the page before you ever say you cannot open it. Say you cannot open their website
+only once a real attempt has failed, or when this session has no web tool at all, loaded or not;
+then ask them to paste the About text from their website or to tell you in a few sentences. Never
+write it from what you remember about the company, and never fill a gap with a guess. It is shown
+with the rest of the Company context before anything is published.
 
 Write what you learn into the context in three labelled parts, so a later skill can tell them apart:
 **Scope** (the companies covered, role types, seniority), **Priorities** (the very high priority
