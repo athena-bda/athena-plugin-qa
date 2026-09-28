@@ -41,7 +41,8 @@ agendas, Likely Attendee lists and pipeline news." If either id is missing you c
 the same thing in other words: "I can't confirm the Intelligence Hub is signed in to Northwind, so
 I'm using only what it publishes for everyone." Either way, from then on use only those. Never use
 the Hub's speaker scores, tiers or connections, which belong to whoever it is signed in as: name a
-Hub speaker with their company and conference only, and take every score, tier and "who knows them"
+Hub speaker with their company and conference, and the LinkedIn link their Hub record carries — a
+public profile link, not the Hub client's data — and take every score, tier and "who knows them"
 from the contact portal.
 
 **Whichever of those two sentences applies has one place in your reply, and is said there exactly
@@ -180,10 +181,10 @@ nothing found, and carry on with the rest.
 - their brand, when it is theirs. The find row does not carry the brand, so call
   `athena_contact_get` once for each attendee you PRINT, and for nobody else. A brand is theirs only
   when their `exact_match` contains the whole token `Brand` — a longer token that merely contains the
-  word, such as `Launch Brand`, does not count. Say it as "her brand" — his or their, whichever fits
-  the person; their unless the user has used other pronouns for them, since a name never tells you.
-  Do not volunteer a brand that is not theirs; if the user asks, it "sits inside the franchise of
-  drugs she works on", and never takes the possessive.
+  word, such as `Launch Brand`, does not count. Say it as "their brand" — their unless the user has
+  used other pronouns for them, since a name never tells you. Do not volunteer a brand that is not
+  theirs; if the user asks, it "sits inside the franchise of drugs they work on", and never takes the
+  possessive.
   `brand` can hold several brands, separated by semicolons, with or without a space after each — up
   to 19 of them. Split it on each semicolon and trim the spaces before you use a brand. Print at most
   two, never the whole list: the one the user asked about where there is one, and otherwise the first
@@ -241,12 +242,19 @@ the contact portal's own filters rather than inventing a new idea of relevance. 
 `athena_filter_options_get` for `contact` first — the values are live and per company, and a disease
 area that exists for one client may not exist for this one.
 
-The narrow-then-broad pattern the published join uses translates directly:
+The narrow-then-broad pattern the published join uses translates directly, on the conference's
+disease areas:
 
-- **Narrow** — filter on the conference's disease areas or therapy areas, plus `exact_matches` for the
-  matching data point, so you get only people Athena has verified.
-- **Broad** — the same filter without `exact_matches`. More people, less certainty. Say which one the
-  user is looking at, every time.
+- **Narrow** — filter `disease_areas` on the conference's disease areas and set
+  `is_disease_areas_exact_match` to `true`, so you get only people Athena has verified as working on
+  them. The flag narrows only alongside `disease_areas`; on its own it changes nothing.
+- **Broad** — the same filter without `is_disease_areas_exact_match`. More people, less certainty.
+  Say which one the user is looking at, every time.
+
+**Therapy areas have no verified cut.** There is no exact-match flag for `therapy_areas`. When the
+conference carries therapy areas and no disease areas, filter `therapy_areas` on them: that is the
+broad cut, and the only one there is. Say so — people who plausibly work in the area, not people
+Athena has verified — and never present it as the narrow cut.
 
 Where the conference is named on contact records, `conference_names` is a facet you can filter on
 directly. Check it first: like every facet, it reports `is_empty` when this company holds nothing for
@@ -254,8 +262,9 @@ it, and filtering an empty facet returns nothing at all — which is the data, n
 
 Run `athena_filter_draft` before quoting any number, and pass on what it says about the count before
 the count itself: `unresolved` terms were IGNORED so the number answers a broader question,
-`is_rolling` means it moves on its own, `stripped_fields` were removed because they are not the
-caller's to set.
+`is_rolling` means it moves on its own, `stripped_fields` were removed, either because they are not
+the caller's to set or because no filter applies them. Each carries its reason: read it, and say it in
+plain words if it changes what the user is looking at.
 
 ## Step 4 — Cross the speakers against the client's contacts, honestly
 
@@ -312,7 +321,7 @@ save it, and be clear about which of the two you are offering:
 
 - **A list** if they want the people they picked, fixed as they are now — `athena_list_create`, with
   each cut passed back as the filter draft returned it. Write a description saying what it was for and
-  when: "SITC 2026 — verified oncology prospects plus connections, built October."
+  when: "SITC 2026 — melanoma exact-match prospects plus connections, built October."
 - **A view** if they want the search to re-run live — `athena_view_save`. Better where the conference
   is still months away and the data will keep moving.
 

@@ -138,10 +138,12 @@ The difference between a verified and an inferred match has one correct sentence
 is not optional — Athena's own QA round found a potential match described as someone's brand, which
 is a claim the data does not support:
 
-- **An exact match**: "her brand", "the brand she works on". Athena has verified this person against
-  this brand.
-- **A potential match**: "sits inside the franchise of drugs she works on". Athena has inferred it
-  from her franchise and has not verified it.
+- **An exact match**: "their brand", "the brand they work on". Athena has verified this person
+  against this brand.
+- **A potential match**: "sits inside the franchise of drugs they work on". Athena has inferred it
+  from their franchise and has not verified it.
+
+The pronoun is their unless the user has used other pronouns for them, since a name never tells you.
 
 A brand is the person's own only when their `exact_match` contains the whole token `Brand` — a longer
 token such as `Launch Brand` does not count.

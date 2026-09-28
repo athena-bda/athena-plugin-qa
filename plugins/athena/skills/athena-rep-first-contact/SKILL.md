@@ -114,6 +114,15 @@ Scope without companies means every company. A context that names companies unde
 own, neither Scope, Priorities nor Exclusions, does not say which of them the rep covers: ask them
 once, before you build any view, and offer to update their context with the answer.
 
+**Put each Scope and Exclusions term into a filter as the portal value it names, and never choose
+between two readings.** A term written as the portal names it goes in exactly as written. A term that
+could be read as more than one set of portal values is not yours to settle: "Commercial and Launch
+Excellence" can mean the role types Commercial plus Launch Excellence, or Commercial Excellence plus
+Launch Excellence. Ask the rep once which they mean, before you build any view, offer to write their
+answer into their context, and wait for it. A guessed reading is saved into the view and re-runs
+every time they open it, and where it is not the reading their Radar Briefing is given, the view and
+the briefing describe two different patches.
+
 Good candidates:
 
 - **Their whole patch** — the companies they cover, their role types and seniority, and nothing
