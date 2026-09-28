@@ -205,6 +205,14 @@ dropped. The briefing is deliberately broader than the things the user said they
 most about. Use the field names the filter tools use, grounded against `athena_filter_options_get`
 if you are unsure a term exists here.
 
+**Send each Scope and Exclusions term as the portal value it names, and never choose between two
+readings.** A term written as the portal names it goes in exactly as written. A term that could be
+read as more than one set of portal values is not yours to settle: "Commercial and Launch
+Excellence" can mean the role types Commercial plus Launch Excellence, or Commercial Excellence plus
+Launch Excellence. Ask the user once which they mean, offer to write their answer into their
+context, and wait for it before you call `athena_changes`. Read one way in a briefing and another in
+its pick-up, one context gives two different patches and two different sets of numbers.
+
 Then read `scope`, and `priorities`, on the way back out, before you say anything about the report:
 
 - `scope.unresolved` — these terms matched no live value and were **IGNORED**. The briefing therefore
@@ -372,7 +380,8 @@ For each item:
 **Name a brand the same way every time.** A brand is the person's own only when their `exact_match`
 contains the whole token `Brand` — a longer token that merely contains the word, such as
 `Launch Brand`, does not count. Say an exact brand as "her brand" — his or their, whichever fits the
-person; their when you cannot tell: "Zenbexus is her brand". A brand that is not exact "sits inside
+person; their unless the user has used other pronouns for them, since a name never tells you:
+"Zenbexus is her brand". A brand that is not exact "sits inside
 the franchise of drugs she works on", and never takes the possessive. Name an exact brand wherever
 the person appears, in any section. Name a brand that is not exact only in the pipeline edition
 section. Briefing items carry `brand` and `exact_match`; a Likely Attendee comes from a find row,
@@ -723,8 +732,12 @@ first-run window and produce a full briefing unasked, however well you explain i
   what is done and I will leave it out for the rest of this conversation". Conveying the same two
   facts in your own words is not enough. "Nothing here counts as read" is the half that explains why
   the same items are in front of them again, and "marker" is the one user-facing word for the
-  baseline. The date is the only part that changes. When the Hub check in "Before you start" calls
-  for its sentence, it comes next, directly after the invitation, and nowhere else in the reply.
+  baseline. The date is the only part that changes. **Nothing comes before that line** — no progress
+  line while you rebuild ("I've found your last briefing", "I'm rebuilding it now") and no word about
+  what the status note held: make the calls without comment. If step 3 needs an answer before you
+  can call `athena_changes`, ask it as a reply of its own and stop; the pick-up that follows still
+  opens with the line. When the Hub check in "Before you start" calls for its sentence, it comes
+  next, directly after the invitation, and nowhere else in the reply.
 - **Do not advance the baseline.** Nothing new is being reported, so nothing new has been delivered.
   The cursors stay exactly where they are, and say so: the marker has not moved.
 - **Same sections, same headings, same numbers.** Head the sections as step 5 says — the four fixed
@@ -736,8 +749,11 @@ first-run window and produce a full briefing unasked, however well you explain i
   line stays, because it belongs to that section; the closing line about their context does not,
   because it belongs to a first briefing.
 - **Rebuild it, do not recall it.** Call `athena_changes` again with the markers you saved before the
-  last briefing, the same `scope` and the same `priority_account_names`. The engine is stateless, so
-  the same inputs give the same engine items and the same numbers. Present it as a refresh rather
+  last briefing, the same `scope` and the same `priority_account_names`. **Build both from their
+  context exactly as step 3 does for a briefing, term for term:** a value written as the portal
+  names it goes in as written, and a term with two readings is asked about, never guessed. The
+  engine is stateless, so the same inputs give the same engine items and the same numbers — and
+  only the same inputs do. Present it as a refresh rather
   than a guaranteed replay: anything published or changed since will show — the conference
   crossings and catalyst lines are read live from the Hub, so they can differ — and a one-off cut
   you made in conversation cannot be recovered; say so if they ask for one.
@@ -767,8 +783,8 @@ A scheduled run is the same skill with four differences:
   to repeat, which is the actual protection.
 - **A context it cannot place stops the run.** Where their own context (My context) names companies
   under a heading other than Scope, Priorities or Exclusions, there is nobody to ask which of them
-  they cover. Say briefly that their context names companies under a heading you cannot place,
-  produce no briefing, and advance no marker.
+  they cover; nor is there anyone to ask which reading of a two-way term is meant (step 3). Say
+  briefly which part of their context you cannot place, produce no briefing, and advance no marker.
 
 If a run finds nothing at all, say so briefly rather than staying silent — a briefing that goes quiet
 is indistinguishable from one that has broken.

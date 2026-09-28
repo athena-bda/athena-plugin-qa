@@ -174,8 +174,9 @@ portal.
   `athena_contact_get` once for each attendee you PRINT, and for nobody else. A brand is theirs only
   when their `exact_match` contains the whole token `Brand` — a longer token that merely contains the
   word, such as `Launch Brand`, does not count. Say it as "her brand" — his or their, whichever fits
-  the person; their when you cannot tell. Do not volunteer a brand that is not theirs; if the user
-  asks, it "sits inside the franchise of drugs she works on", and never takes the possessive.
+  the person; their unless the user has used other pronouns for them, since a name never tells you.
+  Do not volunteer a brand that is not theirs; if the user asks, it "sits inside the franchise of
+  drugs she works on", and never takes the possessive.
   `brand` can hold several brands, separated by semicolons, with or without a space after each — up
   to 19 of them. Split it on each semicolon and trim the spaces before you use a brand. Print at most
   two, never the whole list: the one the user asked about where there is one, and otherwise the first
