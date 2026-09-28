@@ -20,7 +20,7 @@ It spans **both** Athena connectors:
 
 **Check you are live by CALLING a tool on each connector, not by looking for one.** On some platforms
 connector tools are listed but not loaded, so an absent tool proves nothing. Call `athena_orient` for
-the contact portal, and any Hub read — `whoami` or `list_conferences` — for the Hub.
+the contact portal, and the Hub's `whoami` for the Hub — it also tells you whose Hub it is (below).
 
 If only one answers, say which half you have. A conference play with the Hub alone gives speakers but
 no idea who this client already knows; with the portal alone it gives contacts but no conference. Both
@@ -31,6 +31,18 @@ limit.** That holds for every Hub call, not only the first: a `list_conferences`
 `get_conference`, a `list_pipeline_news`. If the retry fails too, name the part that call would have
 covered as not checked — "I could not check conferences named Symposium", "catalyst not checked - the
 Intelligence Hub did not answer" — never as nothing found, and carry on with the rest.
+
+**Check the Hub is signed in to the same client before you use anything it says.** Compare the
+`hub_client_id` of the company you are working in — on `athena_orient`'s `company`, or on the row
+you chose from `athena_company_list` — with the `clientId` the Hub's `whoami` returns. If they match,
+carry on. If they differ, say once, plainly: "The Intelligence Hub is signed in to a different
+organisation from Northwind, so I'm using only what it publishes for everyone: conference dates and
+agendas, Likely Attendee lists and pipeline news." If either id is missing you cannot tell, so say
+the same thing in other words: "I can't confirm the Intelligence Hub is signed in to Northwind, so
+I'm using only what it publishes for everyone." Either way, from then on use only those. Never use
+the Hub's speaker scores, tiers or connections, which belong to whoever it is signed in as: name a
+Hub speaker with their company and conference only, and take every score, tier and "who knows them"
+from the contact portal.
 
 `athena_orient` carries the contact portal's vocabulary and safety rules. Two matter here:
 
@@ -76,8 +88,9 @@ their records are.
 
 A conference the user names is opened directly with `get_conference`, by its name and year or by the
 `id` on a list row. For "what's coming up", or any stretch of dates — "what was on in March 2026?" —
-find the conferences in that window first; "coming up" means the next 90 days, and a window in the
-past is answered as history, never as something to go to. How depends on what `list_conferences`
+find the conferences in that window first; "coming up" means the next 90 days, from today,
+inclusive — a conference that starts today is still coming up — and a window in the past is
+answered as history, never as something to go to. How depends on what `list_conferences`
 offers, so read its parameters rather than assuming:
 
 - If it takes a date range or an "upcoming" parameter, ask it for the window.
@@ -100,8 +113,9 @@ early enough that they can still book.
 `start_date`; `list_speaker_conferences` carries `start_date` and `year`. `search_speakers` carries
 the speaker and no date at all — so a speaker found that way is never offered as a chance to meet
 someone until you have opened the conference record and seen a future date. No future date, no offer,
-and a past speaking slot is history, not an opportunity. A conference with no date is not offered and
-not listed; leave it out without remarking that it has no date.
+and a past speaking slot is history, not an opportunity. Today counts as future: a conference that
+starts today is still one to go to. A conference with no date is not offered and not listed; leave it
+out without remarking that it has no date.
 
 `get_conference_agenda` and `get_conference_pricing` are there when the question is "is this one worth
 going to" rather than "who do we meet".
@@ -132,6 +146,12 @@ its exact-match flag as it stands. Do not route them through `athena_filter_draf
 term to a longer one it recognises — "Urticaria" becomes "Chronic Spontaneous Urticaria" — and
 silently hand you a different list from the one Athena published.
 
+**`source` is a caption, not a filter.** Every Likely Attendee URL carries
+`source=Conference+Speakers`, the portal's label for where the link came from. Drop it when you
+decode the URL, and never send `source` to `athena_contact_find`, which refuses it. Every other value
+goes across exactly as it appears: `diseaseAreas` as `disease_areas`, `isDiseaseAreasExactMatch` as
+`is_disease_areas_exact_match`, and `countries` as `countries`.
+
 **Cross it with the client's connections first.** The whole cut can be tens of thousands of people and
 counting it is slow enough to time out; the same cut restricted to people the client already knows
 comes back immediately and is the more useful answer anyway. When you need the size of the whole list,
@@ -151,12 +171,15 @@ portal.
   word, such as `Launch Brand`, does not count. Say it as "her brand" — his or their, whichever fits
   the person; their when you cannot tell. Do not volunteer a brand that is not theirs; if the user
   asks, it "sits inside the franchise of drugs she works on", and never takes the possessive.
-  `brand` can hold several brands, separated by `; ` — a semicolon and a space, up to 19 of them.
-  Print at most two, never the whole list: the one the user asked about where there is one, and
-  otherwise the first two as the field lists them.
+  `brand` can hold several brands, separated by semicolons, with or without a space after each — up
+  to 19 of them. Split it on each semicolon and trim the spaces before you use a brand. Print at most
+  two, never the whole list: the one the user asked about where there is one, and otherwise the first
+  two as the field lists them.
 
 The Radar Briefing uses this same cut for conferences in the next 90 days, so the two must agree: same
-URL, same verbatim decode, same connection crossing, the same people named the same way.
+URL, same verbatim decode, same connection crossing, people named the same way. They differ in one
+thing only, whose people: the briefing keeps the people inside the user's Scope, while conference
+play reads no context and crosses the cut across the whole company.
 
 **It is often null.** Conferences nobody has set it on return nothing, and that is normal. Never say a
 conference has no Likely Attendee list until its record says so — the list row that carries the key,

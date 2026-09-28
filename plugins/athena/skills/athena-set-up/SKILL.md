@@ -142,8 +142,10 @@ interview into confirmation and correction — which people are far better at th
 **If it returns rules, use them to propose, never to recite.** Topic by topic, turn the values the
 rules score into a short, obvious shortlist the user can accept, reject or tweak: "From your lead
 score criteria it looks like Market Access, Medical Affairs, Procurement and Launch Excellence are the
-role types you care about — is that right, any to add?" Say the `property_label` (Role Type, Intent
-Signals), never the `property`, and quote each `option` verbatim. In the interview, never read out a
+role types you care about — is that right, any to add?" **At most five suggestions a topic** — the
+values the rules score highest, the obvious ones — never every value the rules score; the user can
+add the rest. Say the `property_label` (Role Type, Intent Signals), never the `property`, and quote
+each `option` verbatim. In the interview, never read out a
 score, never list the values the rules mark as unwanted, and never remark to a client user on gaps
 between the rules and the data.
 
@@ -212,15 +214,16 @@ remaining one in a line rather than making them repeat themselves.
    distinction. Then ask separately whether there is any remit they definitely do not want. Only that
    second answer becomes an exclusion.
 5. **Therapy areas.** Which ones matter most.
-6. **Disease areas that are very high priority.** This promotes people; it never narrows the
-   briefing. Do not turn it into a filter that leaves anyone out.
+6. **Disease areas that are very high priority.** This steers suggestions and drafting; it never
+   narrows the briefing. Do not turn it into a filter that leaves anyone out.
 7. **Brands.** "Are there any very high priority brands you'd like to track?"
 
 Two rules run across all seven:
 
-- **Priorities are not exclusions.** Everything above steers what gets surfaced FIRST. Nothing above
-  removes anyone from view unless the user named a specific value they do not want — for example an
-  African or a Local affiliate remit. Ask both questions and keep the answers apart.
+- **Priorities are not exclusions.** Everything above steers what Athena suggests and drafts, and
+  the handful of very high priority companies also leads the briefing. Nothing above removes anyone
+  from view unless the user named a specific value they do not want — for example an African or a
+  Local affiliate remit. Ask both questions and keep the answers apart.
 - **Never exclude on an unknown.** A contact whose remit, therapy area or disease area is N/A is a
   contact Athena has no information about. They stay in.
 
@@ -268,7 +271,14 @@ Write what you learn into the context in three labelled parts, so a later skill 
 **Scope** (the companies covered, role types, seniority), **Priorities** (the very high priority
 companies, company tiers, therapy areas, disease areas, remits, Intent Signals, brands) and
 **Exclusions** (only values the user named as unwanted). Briefings and views filter on Scope and
-Exclusions, and rank on Priorities.
+Exclusions, and nothing under Priorities filters.
+
+**Only the very high priority companies change a briefing's order.** Their people come straight
+after connections. Everything else under Priorities — therapy areas, disease areas, remits, Intent
+Signals, brands — steers your suggestions and drafting, as company tiers do, and never the order.
+When you tell the user what a context does, say exactly that: "Amgen and J&J lead your briefings;
+Oncology, Europe and the United States steer what I suggest and how I draft." Never say a therapy
+area, disease area, remit, Intent Signal or brand puts anyone at the top or moves them up a list.
 
 **Every context takes those three headings — the company's, and every person's.** Use the three
 words themselves as headings in every context this interview writes. The Company context is About us
@@ -276,6 +286,14 @@ first, then the three headings — Scope, Priorities, Exclusions, in that order;
 the three headings alone. A context written as prose, or under headings of your own, gives the skills
 that read it back nothing to tell apart, and they are the skills that decide who is in a briefing.
 Nothing reads About us as Scope, and nothing filters on it.
+
+**Companies under a heading of their own make the briefing stop and ask.** If the user writes, or
+asks you to publish, a context that names companies under a heading of its own — "My companies",
+"Priority accounts" — tell them what it will do before you publish it: the briefing cannot tell
+whether those are companies they cover or companies that matter most, so it will stop and ask which
+of them they cover, and a scheduled briefing will produce nothing until the context says which.
+Never tell them such a heading covers every company, or that it is ignored. Offer to put those companies under
+Scope, Priorities or both, and publish their own wording only if they still want it.
 
 **Covered companies go under Scope; very high priority companies go under Priorities.** The handful
 from topic 1 goes under the Company context's Priorities. Its Scope names companies only if the user
@@ -352,12 +370,14 @@ After each save, say it is live and give its version from the response.
 Documents are capped at 64 KiB of text. Over that the save is refused with the exact numbers and
 nothing is truncated — cut it down rather than hoping.
 
-## Step 6 — Seed each person, and let them confirm
+## Step 6 — Seed each person
 
-Seeded contexts are live as soon as they are written. Nobody has to accept them for the system to
-work — but the first time each person opens a conversation, their assistant should read their
-context back to them and offer to tune it. Say so when you seed: "each person's context is live now,
-and they can change their own whenever they want."
+Seeded contexts are live as soon as they are written, and nobody has to accept them for the system
+to work. Publishing a context does not itself trigger a read-back or any other follow-up, so promise
+only what is true. Say, when you seed: "Sam's context is live now. They can see it under My context in
+the portal and change it whenever they want, or ask their assistant to." Never say their assistant
+will read it back to them, check it with them or offer to tune it because it was published: nothing
+follows from publishing, and a promise nobody keeps is one the user will notice.
 
 **To seed a colleague, find them by name or email with `athena_team_find`. Never ask the user for an
 id.**
@@ -404,11 +424,11 @@ writing about is usually not in the room to notice that their territory has been
 part.
 
 **A remit under Scope silently narrows everything they will ever see.** The skills that read a
-person's context FILTER on Scope and Exclusions, and RANK on Priorities. Write "Territory. Remits
+person's context FILTER on Scope and Exclusions, and never on Priorities. Write "Territory. Remits
 Europe, European Region and Global." under Scope and every briefing and every saved view that person
 gets is cut down to those three values — no error, no warning, and everyone outside them quietly
 stops appearing. A remit is a priority. So are therapy areas, disease areas, Intent Signals and
-brands: each one under Scope removes people instead of ranking them, and a person's context is the
+brands: each one under Scope removes people instead of steering, and a person's context is the
 one that decides whose briefing they get. Written as a paragraph, or with the companies they cover
 under Priorities alone, it hands them a briefing across every company, labelled as their own patch.
 

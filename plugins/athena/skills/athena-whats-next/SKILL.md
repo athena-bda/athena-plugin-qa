@@ -23,10 +23,22 @@ If it returns, you are connected. If it does not, say so and stop — never prod
 memory or from an earlier conversation.
 
 **Two parts of the briefing also need the Intelligence Hub:** the conferences (section 2) and the
-catalyst lines (section 3). The first `list_conferences` call of section 2 is the check. If the Hub
-does not answer, brief from the portal anyway, and say in section 2, and where the catalyst lines
-would go, that it could not be checked because the Intelligence Hub is not connected. An unchecked
-part must never read as one that found nothing.
+catalyst lines (section 3). The Hub's `whoami`, called once before the first Hub read, is the check,
+and it counts as one of section 2's calls. If the Hub does not answer, brief from the portal anyway,
+and say in section 2, and where the catalyst lines would go, that it could not be checked because the
+Intelligence Hub is not connected. An unchecked part must never read as one that found nothing.
+
+**Check the Hub is signed in to the same client before you use anything it says.** Compare the
+`hub_client_id` of the company you are working in — on `athena_orient`'s `company`, or on the row
+you chose from `athena_company_list` — with the `clientId` the Hub's `whoami` returns. If they match,
+carry on. If they differ, say once, plainly: "The Intelligence Hub is signed in to a different
+organisation from Northwind, so I'm using only what it publishes for everyone: conference dates and
+agendas, Likely Attendee lists and pipeline news." If either id is missing you cannot tell, so say
+the same thing in other words: "I can't confirm the Intelligence Hub is signed in to Northwind, so
+I'm using only what it publishes for everyone." Either way, from then on use only those. Never use
+the Hub's speaker scores, tiers or connections, which belong to whoever it is signed in as: name a
+Hub speaker with their company and conference only, and take every score, tier and "who knows them"
+from the contact portal.
 
 **A Hub call that fails or times out is retried at most once, and the retry counts against the call
 limit.** That holds for every Hub call, not only the first: a `list_conferences` sweep word, a
@@ -41,6 +53,12 @@ whether a briefing may be produced at all. If the status note holds no markers f
 previous briefing, the gate FAILS, and a failed gate means you say one sentence and stop — no
 `athena_changes` call, no briefing, no caveat. Do not start composing a briefing and then look for a
 reason not to send it; the gate comes first, and it is the whole of the answer when it fails.
+
+**A fresh request always runs a fresh briefing.** "What's next?", "What should I focus on?", "What's
+new?" — anything that does not ask to pick something up — gets a new briefing from the saved markers
+in their Assistant's notes, even if one ran earlier today, in this conversation or another. There is
+no same-day rule. Only the pick-up phrases above rebuild an earlier briefing: "What's next?" on its
+own is a fresh request; "What's next on my radar" is a pick-up.
 
 `athena_orient` carries the vocabulary and the safety rules for this connector. Read them. Two are
 worth repeating here because a briefing is exactly where they get broken:
@@ -151,9 +169,13 @@ are meant to narrow. The context is written in three labelled parts and they do 
 - **Exclusions** — only values the user named as unwanted. These go into the filter too.
 - **Priorities** — therapy areas, disease areas, geographical remits, Intent Signals, brands, and the
   handful of companies that matter most. None of these goes into the filter. Only the companies among
-  them order the briefing: people at those companies lead the pointer line and come straight after
-  connections in every section, under the one order in step 5. The rest of Priorities neither
-  filters nor reorders.
+  them order the briefing: pass their names to `athena_changes` as `priority_account_names`, beside
+  `scope` and never inside it, and the server puts people at those companies straight after
+  connections in every group, under the one order in step 5. Send it on every `athena_changes`
+  call — the first, every continuation and every pick-up — or the next page comes back in a
+  different order from the one you started numbering. With no priority companies, pass `[]`. The
+  rest of Priorities neither filters nor reorders; it steers what you suggest next, as company tiers
+  do.
 
 **Companies under Scope narrow the briefing; companies under Priorities only rank it, always.** That
 holds when Scope names no companies at all: "all companies" under Scope with Amgen under Priorities
@@ -176,7 +198,7 @@ dropped. The briefing is deliberately broader than the things the user said they
 most about. Use the field names the filter tools use, grounded against `athena_filter_options_get`
 if you are unsure a term exists here.
 
-Then read `scope` on the way back out, before you say anything about the report:
+Then read `scope`, and `priorities`, on the way back out, before you say anything about the report:
 
 - `scope.unresolved` — these terms matched no live value and were **IGNORED**. The briefing therefore
   answers a BROADER question than the user's context describes. Name them: "I couldn't match 'Pfizer'
@@ -184,6 +206,8 @@ Then read `scope` on the way back out, before you say anything about the report:
   because of it."
 - `scope.ambiguous` — not applied at all. Ask which was meant.
 - `scope.stripped_fields` — removed because they are not the caller's to set.
+- `priorities.unresolved` and `priorities.ambiguous` — priority companies that matched no company, or
+  more than one. They narrow nothing, but they put nobody ahead either: name them, the same way.
 
 An unmatched context term that goes unmentioned is how a confident, empty, wrong briefing gets
 produced. Say it first, before the items.
@@ -226,10 +250,12 @@ and NAME them.** "The first three are worth your morning" without saying which t
 line, and neither is one whose three are revealed at the foot under a closing "where I would start" —
 a reader who stops after the first screen has to leave with the pointer. The recommendation goes at
 the top, not in a trailer. Where their context names priority companies, the items you name lead with
-items at those companies. If the whole briefing is three items or fewer, the people under conferences
-included, skip the pointer line and go straight to them. Then the sections, in this order, every
-time. A section with nothing in it still appears, as one line saying so and what was checked; an
-absent section reads as a system that forgot rather than a patch that was quiet.
+the ones at those companies: engine items whose `at_priority_company` is true, and people under
+conferences whose company is a priority company, judged by name because their rows carry no flag, as
+"A person under conferences carries no flag" below says. If the whole briefing is three items or
+fewer, the people under conferences included, skip the pointer line and go straight to them. Then the sections, in this
+order, every time. A section with nothing in it still appears, as one line saying so and what was
+checked; an absent section reads as a system that forgot rather than a patch that was quiet.
 
 1. **Connections who changed role or employer.** First, always. These are people someone at the
    client already knows, and they are the highest-value flags the briefing makes. Read the
@@ -237,10 +263,10 @@ absent section reads as a system that forgot rather than a patch that was quiet.
    carries their names. If the client holds no connection data at all, say that — "Athena holds no
    LinkedIn connections for your company yet" — rather than a line that reads like a quiet month.
 2. **Conferences in the next 90 days.** For each therapeutic conference, the people on Athena's
-   Likely Attendee cut who are already connections, NAMED — "EADV: Anna Weber, Head of Medical
-   Affairs at Galderma, 82 (High), known to Sam Patel" — and for the other conferences,
-   speakers in their patch. They are listed without numbers, as the numbering rule below says. How
-   to find and read them is under "Section 2" below.
+   Likely Attendee cut who are in their Scope and already connections, NAMED — "EADV: Anna Weber,
+   Head of Medical Affairs at Galderma, 82 (High), known to Sam Patel" — and for the other
+   conferences, speakers in their patch. They are listed without numbers, as the numbering rule
+   below says. How to find and read them is under "Section 2" below.
 3. **The pipeline edition**, headed by the newest reported edition's own `title`: the people in this
    user's patch that it carries — and any older edition reported with it — each with their brand and
    a catalyst line ("Section 3" below).
@@ -287,18 +313,43 @@ resolves to one thing — there is no way for the user to click one. Keep that n
 of the conversation. Each item carries an `item_id` if you need to be exact about which one you mean.
 
 **The conference section's people are named, never numbered.** List them under their conference
-without a number, and open one by name when asked — "tell me more about Anna Weber". That section is
-read live from the Intelligence Hub, so on a pick-up it can come back different, shorter or not at
-all; because none of it carries a number, none of that can move an engine item's number.
+without a number of their own, and open one by name when asked — "tell me more about Anna Weber". A
+person who already has an engine number is shown with that number, as "Nobody is printed twice"
+below says; the conference section never gives out a number. That section is read live from the
+Intelligence Hub, so on a pick-up it can come back different, shorter or not at all; because none of
+it gives out a number, none of that can move an engine item's number.
 
 **One order, in every section.** Connections first; then people at the companies under Priorities
 in their context; then `lead_score_standardized`, highest first; then date, most recent first, with
-undated items last; then `contact_id`. Inside the connection and priority-company groupings the score
-does the ranking, and the tier stays a label beside it. In the numbered sections the date is the
-item's own, from `athena_changes`, never a catalyst's: nothing the Hub returns may move a numbered
-item. Apply the order to everything you have loaded and not yet printed, not only to the first page,
-so the first telling, "the next ten" and a pick-up — which reloads the same items — all number the
-same way.
+undated items last; then `contact_id`, ascending, as text. Inside the connection and
+priority-company groupings the score does the ranking, and the tier stays a label beside it. In the
+numbered sections the date is the item's own, from `athena_changes`, never a catalyst's: nothing the
+Hub returns may move a numbered item.
+
+**The server applies that order; keep it.** Given `priority_account_names` (step 3), `athena_changes`
+returns every group, and every continuation page of it, already in the one order, and marks every
+item with `at_priority_company`: true when the server counts the person as at one of those
+companies, false when it does not. Within a group, print the items in the order they arrive and never
+re-sort them. A section built from one group — New arrivals, and the pipeline edition when it covers
+one edition — is that group's order. Where a section is built from several groups — section 1,
+"Recent job changes", and the pipeline edition when it covers more than one edition — merge the
+groups by the same keys the items carry, and by nothing else: whether it carries a `connection`, then
+`at_priority_company`, true first, then `lead_score_standardized`, then the item's own date (undated
+last), then `contact_id`, ascending, as text. **Never decide whether an item from `athena_changes`
+is at a priority company by comparing names** — not its `account_name` against the `matched` names
+under `priorities.resolved`, and not against the names in their context. A name can be spelt
+differently from the one the server matched; the item's flag is the server's own answer. That way the
+first telling, "the next ten" and a pick-up — which reloads the same items — all number the same way.
+
+**A person under conferences carries no flag, so judge them by name.** A find row, and a Hub
+speaker's record, has no `at_priority_company`. Such a person is at a priority company when the
+company on their row — `account_name` on a portal row — matches the `matched` name of an entry under
+`priorities.resolved`, ignoring case and spacing: the stored spelling where the server found the
+company, the name as they wrote it where it could not check. That places them in the conference
+section's order and lets them lead the pointer line; it never gives them a number and never moves an
+engine item. Someone there who already has a number goes by their numbered item's flag. Beyond this,
+read `priorities` only to name the priority companies that matched nothing, or more than one, as step
+3 says.
 
 For each item:
 
@@ -319,10 +370,11 @@ the person appears, in any section. Name a brand that is not exact only in the p
 section. Briefing items carry `brand` and `exact_match`; a Likely Attendee comes from a find row,
 which does not, so section 2 reads them for the attendees it prints.
 
-**`brand` can hold several brands, separated by `; `** — a semicolon and a space, up to 19 of them.
-Split it on that separator before you use a brand. Print at most two for a person, never the whole
-list: the brand the item is about where there is one, such as the one its catalyst line names, and
-otherwise the first two as the field lists them — "Zenbexus and Tecvayli are her brands".
+**`brand` can hold several brands, separated by semicolons, with or without a space after each** —
+up to 19 of them. Split it on each semicolon and trim the spaces before you use a brand. Print at
+most two for a person, never the whole list: the brand the item is about where there is one, such as
+the one its catalyst line names, and otherwise the first two as the field lists them — "Zenbexus and
+Tecvayli are her brands".
 
 **Say the date the data supports, and no more.** Each kind of change carries its own date field, and
 they are not equally precise:
@@ -341,10 +393,15 @@ they are not equally precise:
 
 **Print at most five items in a section, but keep the rest.** The tool returns up to ten per group.
 When you print five, hold the others in this conversation and say how many more — "five more, say
-the word". In a section built from one group, "N more" is counted from what the group says is
-available, minus what you have printed; a section built from several groups — sections 1 and 4
-always, section 3 when it covers more than one edition — counts as "Sections 1 and 4" below says.
-Never characterise people you have not been given.
+the word". **Give an exact count only where you know who is left.** In a section built from one
+group, that is when the group has no populated `continuation` — everyone is loaded, so N is the
+people loaded and not printed — or when nobody has yet been printed in any other section, so N is
+what the group says is available, minus what you have printed from it. Otherwise its unloaded pages
+may hold someone already printed in another section, who will not be printed again, and nothing
+returned says whether they do: say "at least N more", N being the distinct people loaded and not
+printed, and offer to fetch the rest. A section built from several groups — sections 1 and 4 always,
+section 3 when it covers more than one edition — counts as "Sections 1 and 4" below says. Never
+characterise people you have not been given.
 
 **Keep track of what you have PRINTED, and never print it twice.** Two lists, both held in this
 conversation and neither written anywhere: the items you have already printed, and the items the tool
@@ -359,9 +416,20 @@ the next ones — not renumbered, and not with a note saying it is a repeat. A r
 ten"; it is a shorter answer than the one they asked for. If the queue and the continuation together
 run out before you reach the number they asked for, print what there is and say that is all of it.
 
+**Nobody is printed twice, in any section.** One person can sit in groups that feed different
+sections — the pipeline edition and New arrivals, say. A person already printed keeps their first
+entry and its number: the numbered sections are filled in section order, and every later one leaves
+them out — in the first telling and in every "next ten" — and does not count them in its "N more".
+Where they could still be in pages not yet loaded, that count is "at least N more", as above. Never
+print a second entry that says it is the same person as an earlier one. The conference section
+is the one exception, and it only points: a person there who already has a number in this briefing
+is named with that number and nothing more — "Katie Hernandez (7)" — and their entry stays where the
+number is. Nothing the conference section holds ever removes or renumbers an engine item.
+
 **Fetch more only where there is more.** A group whose `result_truncated` carries a populated
 `continuation` has more behind it: fetch the rest when asked with `continue_group_id` and
-`continue_offset`, taken exactly from that continuation, rather than re-running the whole report.
+`continue_offset`, taken exactly from that continuation, with the same `cursors`, `scope` and
+`priority_account_names` as the call that returned it, rather than re-running the whole report.
 `result_truncated` on its own does not mean there is more — an edition group carries it to describe
 the edition's backlog even when nothing further can be fetched. When the queue and every continuation
 are exhausted, say that is everyone.
@@ -400,9 +468,9 @@ different `item_id`, so:
   `continuation` in its `result_truncated`.
 - **The next ten.** Serve the loaded queue first. Then fetch every group whose `continuation` is
   populated — each edition group, role changes, employer moves — at exactly the group and offset it
-  returned; merge what comes back with the same winner, leave out everyone already printed, order it
-  the one way above and number on. When the queue and every continuation are exhausted, say that is
-  everyone.
+  returned; merge what comes back with the same winner, leave out everyone already printed, merge it
+  into the queue by the item keys above and number on. When the queue and every continuation are
+  exhausted, say that is everyone.
 - **Printed once.** A person printed from an edition who turns up later as an employer move, or in
   another edition, is not printed again; where it is a move, say where they moved from when they are
   next opened.
@@ -414,8 +482,9 @@ different `item_id`, so:
 `start_date`; `list_speaker_conferences` carries `start_date` and `year`. `search_speakers` carries
 the speaker and no date at all — so a speaker found that way is never offered as a chance to meet
 someone until you have opened the conference record and seen a future date. No future date, no offer,
-and a past speaking slot is history, not an opportunity. A conference with no date is not offered and
-not listed; leave it out without remarking that it has no date.
+and a past speaking slot is history, not an opportunity. Today counts as future: a conference that
+starts today is still one to go to. A conference with no date is not offered and not listed; leave it
+out without remarking that it has no date.
 
 **Find the conferences.** How depends on what `list_conferences` offers, so read its parameters
 rather than assuming:
@@ -432,11 +501,12 @@ rather than assuming:
   it, say so — "I could only see conferences up to <date>" — rather than implying you checked
   everything.
 
-Keep the conferences whose `start_date` falls in the next 90 days.
+Keep the conferences whose `start_date` falls in the next 90 days, from today, inclusive — a
+conference that starts today is in the window.
 
 **Therapeutic conferences are read for their Likely Attendee cut; the rest keep their speakers.** A
-conference whose `event_type` includes Therapeutic Conference is crossed with the user's
-connections. Any other conference gets speakers in their patch, from at most three
+conference whose `event_type` includes Therapeutic Conference is crossed with the user's Scope and
+their connections. Any other conference gets speakers in their patch, from at most three
 `list_conference_speakers` calls across the section.
 
 **Where each therapeutic conference's cut comes from:**
@@ -454,8 +524,24 @@ Attendee part.
 **The Likely Attendee cut is a prospect list, not a registration list.** It resolves to people whose
 disease areas match the conference's focus, in the countries the Hub lists. Pass its values to
 `athena_contact_find` exactly as they appear in the URL — never through `athena_filter_draft`, which
-will helpfully widen a term and silently change the list — and cross it with the user's connections
-rather than pulling the whole cut, which is both the useful answer and the only cheap one. The URL as
+will helpfully widen a term and silently change the list.
+
+**`source` is a caption, not a filter.** Every Likely Attendee URL carries
+`source=Conference+Speakers`, the portal's label for where the link came from. Drop it when you
+decode the URL, and never send `source` to `athena_contact_find`, which refuses it. Every other value
+goes across exactly as it appears: `diseaseAreas` as `disease_areas`, `isDiseaseAreasExactMatch` as
+`is_disease_areas_exact_match`, and `countries` as `countries`.
+
+**Cross the cut with their Scope and their connections**, rather than pulling the whole cut, which is
+both the useful answer and the only cheap one. **Take the Scope and Exclusions from the
+`scope.applied_filter` that `athena_changes` returned for this briefing**, once its `unresolved` and
+`ambiguous` terms have been dealt with as step 3 says — never from the terms you submitted. That is
+the filter the engine sections actually ran: a term such as "Amgen" can come back as the company's
+stored name, and `athena_contact_find` uses a value exactly as given, so the submitted term would
+match nobody the engine sections found. Add the URL's values to that filter — still exactly as they
+appear, with `source` left out — and ask only for people with a connection, so every person this
+section names is inside the same patch as the engine sections. Conference play, which reads
+no context, crosses the same cut across the whole company; the briefing never does. The URL as
 it stands is the exact-match cut, and it comes first. The potential-match cut — the same URL with the
 disease-area exact-match parameter removed — is read only when the user asks for it. Whole-list sizes
 come from the Hub's own `exact_match_count` and `potential_match_count`, never from a portal count.
@@ -467,6 +553,8 @@ are asked for the same way. For each attendee you print: their name, linked to t
 `primary_linkedin_url` on their row; their company; their score and tier; who at the client knows
 them, from the `connection` on their row; and their brand when it is exact. The find row does not
 carry the brand, so call `athena_contact_get` once for each attendee you PRINT, and for nobody else.
+An attendee who already has a number in this briefing is named with it and nothing more — "Katie
+Hernandez (7)" — counts among the five, and needs no read: their brand is on their numbered entry.
 
 **Say what the section checked.** Name the conferences you read — "I checked EADV, EURETINA, MDS,
 NACFC, ACG and ECNP" — and, where the cap left some unopened, name them with their dates: "Not
@@ -478,9 +566,10 @@ and 5 of the 30 are kept for the attendees' `athena_contact_get` reads. Stop rea
 check, with dates, the same way as the unopened ones.
 
 **A conference the user names is always opened.** "Check ESMO" is a new request with its own 30
-calls: open it whatever the cap, cross it with their connections and name its attendees the same way —
-print at most ten, each with its `athena_contact_get` read. A potential-match cut they ask for is a
-new request too.
+calls: open it whatever the cap, cross it with their connections and with the Scope and Exclusions
+of the briefing's `scope.applied_filter`, never the terms you submitted, and name its attendees the
+same way — print at most ten, each with its `athena_contact_get` read. A potential-match cut they ask
+for is a new request too.
 
 ### Section 3: the pipeline edition's brands and catalysts
 
@@ -499,9 +588,10 @@ myeloma on 13 August."
 - **One call per brand, five at most.** Call `list_pipeline_news` with `drug_name` set to a single
   brand and `limit` 10, and WITHOUT `since`: `since` silently drops every item with no `article_date`,
   and undated items are common. A single brand, because the whole `brand` field matches nothing once
-  it holds several. Take each printed person's first brand — the text before the first `; ` — in
-  print order, skipping one already called. Where a person carries several brands and none has given a catalyst yet, call their
-  others while calls remain, and name the brand that has one — otherwise their first.
+  it holds several. Take each printed person's first brand — the text before the first semicolon,
+  trimmed — in print order, skipping one already called. Where a person carries several brands and
+  none has given a catalyst yet, call their others while calls remain, and name the brand that has
+  one — otherwise their first.
 - **Choose the item.** From the rows returned, take the most recent item dated within 60 days of the
   day you produce the briefing. If there is none, take the first undated item in the order the Hub
   returned, show it without a date and do not call it recent. Otherwise — the call answered and
@@ -554,10 +644,26 @@ each group reported for this briefing, and when you delivered it. Those are the 
 BEFORE this briefing, and they are what a pick-up replays from. Save what `baseline_used` says, not
 the clock: the clock slides, and a replay from a sliding window is a different briefing.
 
+`baseline_used` carries `stream_key` and `from`. Save exactly those two, one entry per stream — the
+edition groups of one series all report the same one — in a second block under the first, replacing
+any earlier one:
+
+````
+## Markers before the last briefing
+<!-- athena:previous-markers -->
+Delivered: 2026-09-16
+```json
+[
+  { "stream_key": "new_arrivals", "from": "2026-08-01T09:14:00Z" },
+  { "stream_key": "job_change_updates", "from": "2026-07-04T00:00:00Z" }
+]
+```
+````
+
 **The note holds markers and nothing else.** Not items, not contact ids, not summaries of what you
-said, and no record of what the user acted on. It is a set of cursors and two timestamps. Anything
-more is a small database inside a text file, and it will drift from the truth the moment the data
-moves.
+said, and no record of what the user acted on. It is the current cursors, the markers before the
+last briefing and the day that briefing was delivered. Anything more is a small database inside a
+text file, and it will drift from the truth the moment the data moves.
 
 ## Picking up where they left off
 
@@ -573,10 +679,11 @@ Do these five things, in this order, before anything else:
    plan a briefing, build a scope or call `athena_changes`. A pick-up starts by finding out whether
    there is anything to pick up.
 2. **Look for the markers from before the last briefing.** That is the block step 6 writes when a
-   briefing is delivered: the `baseline_used` values each group reported, with the date you delivered
-   it. The current cursor block (`<!-- athena:cursors -->`) is a DIFFERENT thing and finding it is
-   not a pass — current markers on their own mean a briefing was delivered by something that did not
-   record what it replayed from, so there is still nothing to replay.
+   briefing is delivered (`<!-- athena:previous-markers -->`): the `stream_key` and `from` of each
+   `baseline_used`, with the date you delivered it. The current cursor block
+   (`<!-- athena:cursors -->`) is a DIFFERENT thing and finding it is not a pass — current markers
+   on their own mean a briefing was delivered by something that did not record what it replayed
+   from, so there is still nothing to replay.
 3. **If that block is absent, the gate has FAILED. Say exactly this, and nothing else:** "I have no
    previous Radar Briefing to pick up. I can run a fresh one now - it will look back 30 days. Shall
    I?" Then END THE TURN and wait for their answer.
@@ -613,11 +720,17 @@ first-run window and produce a full briefing unasked, however well you explain i
   line stays, because it belongs to that section; the closing line about their context does not,
   because it belongs to a first briefing.
 - **Rebuild it, do not recall it.** Call `athena_changes` again with the markers you saved before the
-  last briefing and the same scope. The engine is stateless, so the same inputs give the same engine
-  items and the same numbers. Present it as a refresh rather than a guaranteed replay:
-  anything published or changed since will show — the conference crossings and catalyst lines are
-  read live from the Hub, so they can differ — and a one-off cut you made in conversation cannot be
-  recovered; say so if they ask for one.
+  last briefing, the same `scope` and the same `priority_account_names`. The engine is stateless, so
+  the same inputs give the same engine items and the same numbers. Present it as a refresh rather
+  than a guaranteed replay: anything published or changed since will show — the conference
+  crossings and catalyst lines are read live from the Hub, so they can differ — and a one-off cut
+  you made in conversation cannot be recovered; say so if they ask for one.
+- **Turn the saved markers into cursors this way, and no other.** Each entry in the markers-before
+  block becomes one cursor: its `stream_key` as `stream_key`, and its `from` as
+  `last_edition_order_value` — `{ "stream_key": "new_arrivals", "last_edition_order_value":
+  "2026-08-01T09:14:00Z" }` — with no `last_edition_id` and no `label`. Pass that array as `cursors`.
+  The current cursor block is never a pick-up's input, and the `next_cursors` a pick-up gets back are
+  never saved.
 - Work down the items they have not dealt with, and offer the next tranche in the one order step 5
   sets when they ask for more, using the continuation the re-run returns — the same printed /
   unprinted discipline as step 5, and the same numbering carried on.
