@@ -44,6 +44,11 @@ the Hub's speaker scores, tiers or connections, which belong to whoever it is si
 Hub speaker with their company and conference only, and take every score, tier and "who knows them"
 from the contact portal.
 
+**Whichever of those two sentences applies has one place in your reply, and is said there exactly
+once:** at the top of the answer, before the first conference or person. Nowhere else: not in a
+progress line while you work, not a second time further down, and never only in your own
+reasoning — a sentence you only thought has not been said.
+
 `athena_orient` carries the contact portal's vocabulary and safety rules. Two matter here:
 
 - **Scores have three states, and one number.** `lead_score_standardized` is the only lead score you

@@ -517,14 +517,17 @@ A playbook with two honest pieces beats one with twelve invented ones. Say that 
 
 The point of set-up is that the briefing then arrives without anyone asking for it.
 
-Where the platform supports scheduled runs, offer to create one: "shall I set up a monthly run that
-does the Radar Briefing and shows you the result?" Monthly, timed for just after Athena
-publishes its curated editions, is the right default — that is the cadence the underlying data moves
-at, and a weekly run mostly reports that nothing has happened. Conference work moves faster and is
-better run on its own, when a conference is actually coming up.
+**Offer a scheduled run only when this session has a tool that creates one** — a tool you can see
+and could call now, not a feature the platform may have somewhere else. With one, offer to create
+it: "shall I set up a monthly run that does the Radar Briefing and shows you the result?" Monthly,
+timed for just after Athena publishes its curated editions, is the right default — that is the
+cadence the underlying data moves at, and a weekly run mostly reports that nothing has happened.
+Conference work moves faster and is better run on its own, when a conference is actually coming up.
 
-Where the platform does not support it, say so plainly and leave it: an assistant that promises a
-recurring run it cannot create is worse than one that says "you will need to ask me each month."
+With no such tool, do not offer to set one up, and do not list it among the things you can do next.
+Say so plainly and leave it: they will need to ask each month, or use their platform's own
+scheduling. An assistant that promises a recurring run it cannot create is worse than one that says
+"you will need to ask me each month."
 
 Two things not to rely on:
 

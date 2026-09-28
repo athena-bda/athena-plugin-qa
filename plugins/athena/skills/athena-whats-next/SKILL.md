@@ -40,6 +40,13 @@ the Hub's speaker scores, tiers or connections, which belong to whoever it is si
 Hub speaker with their company and conference only, and take every score, tier and "who knows them"
 from the contact portal.
 
+**Whichever of those two sentences applies has one place in your reply, and is said there exactly
+once.** In a briefing it is the first line of the briefing, before the pointer line and everything
+else. In a pick-up it comes directly after the pick-up's opening line and its invitation, before
+anything else. Nowhere else: not in a progress line while you work, not a second time further down,
+and never only in your own reasoning — a sentence you only thought has not been said. A failed
+pick-up gate says its one sentence and nothing else, this one included.
+
 **A Hub call that fails or times out is retried at most once, and the retry counts against the call
 limit.** That holds for every Hub call, not only the first: a `list_conferences` sweep word, a
 `get_conference`, a `list_pipeline_news`. If the retry fails too, name the part that call would have
@@ -242,7 +249,8 @@ caveat — and say the first-run window once for the whole briefing, not once pe
 
 ## Step 5 — Render it: one pointer line, then the sections
 
-Open with a single pointer line that says what is in front of them, how much has changed — the count
+Open with a single pointer line — below the Hub sentence, when "Before you start" calls for one —
+that says what is in front of them, how much has changed — the count
 of numbered items; the people under conferences are not counted — and **which items to start with —
 named, in the pointer line itself**: "Here is your Radar Briefing: 11 things since 1 August, and the
 two to start with are Omar Mensah's move to Zenas and Anna Weber at EADV." **Name at most three items,
@@ -568,8 +576,9 @@ check, with dates, the same way as the unopened ones.
 **A conference the user names is always opened.** "Check ESMO" is a new request with its own 30
 calls: open it whatever the cap, cross it with their connections and with the Scope and Exclusions
 of the briefing's `scope.applied_filter`, never the terms you submitted, and name its attendees the
-same way — print at most ten, each with its `athena_contact_get` read. A potential-match cut they ask
-for is a new request too.
+same way — print at most ten, each with its `athena_contact_get` read, except an attendee who already
+has a number in this briefing, who is named with it and nothing more — "Katie Hernandez (7)" —
+counts among the ten, and needs no read. A potential-match cut they ask for is a new request too.
 
 ### Section 3: the pipeline edition's brands and catalysts
 
@@ -618,9 +627,15 @@ answer.
 `next_cursors` in the response is what the baseline SHOULD become. Three rules govern writing it back,
 and all three exist because getting this wrong loses a briefing nobody ever saw:
 
-1. **Advance only on confirmed delivery.** Write the cursors after the briefing has actually reached
-   the user — not when the report was generated. A run that fails, errors, or is cut off before the
-   user sees anything must leave the baseline exactly where it was.
+1. **Advance only on delivery.** Write the cursors after the briefing has actually reached the user —
+   not when the report was generated. In a conversation, the briefing has reached the user once you
+   have written it out in your reply, so save the markers in that same turn, after the briefing
+   text, without asking and without offering a choice. Never hold them behind a yes: a user who never
+   says yes gets a first-run briefing every time and never has one to pick up. This is not one of the
+   saves the user agrees to first, like a list, a view or a document; the markers are your own
+   working notes. A run that fails, errors, or is cut off before the user sees anything must leave
+   the baseline exactly where it was, and a scheduled run saves only once its message has been
+   delivered.
 2. **Merge stream by stream.** Update only the streams present in `next_cursors`, leaving every other
    entry in the note untouched. A scheduled run and a conversation happening the same morning must not
    overwrite each other's progress, and a wholesale replacement is how one of them does.
@@ -708,7 +723,8 @@ first-run window and produce a full briefing unasked, however well you explain i
   what is done and I will leave it out for the rest of this conversation". Conveying the same two
   facts in your own words is not enough. "Nothing here counts as read" is the half that explains why
   the same items are in front of them again, and "marker" is the one user-facing word for the
-  baseline. The date is the only part that changes.
+  baseline. The date is the only part that changes. When the Hub check in "Before you start" calls
+  for its sentence, it comes next, directly after the invitation, and nowhere else in the reply.
 - **Do not advance the baseline.** Nothing new is being reported, so nothing new has been delivered.
   The cursors stay exactly where they are, and say so: the marker has not moved.
 - **Same sections, same headings, same numbers.** Head the sections as step 5 says — the four fixed
