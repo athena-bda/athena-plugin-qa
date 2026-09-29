@@ -56,10 +56,11 @@ their score, tier and "who knows them" are that contact's, read from the portal,
 is made on name and employer, say they look like the same person.
 
 **A Hub call that fails or times out is retried at most once, and the retry counts against the call
-limit.** That holds for every Hub call, not only the first: a `list_conferences` sweep word, a
-`get_conference`, a `list_pipeline_news`. If the retry fails too, name the part that call would have
-covered as not checked — "I could not check conferences named Symposium", "catalyst not checked - the
-Intelligence Hub did not answer" — never as nothing found, and carry on with the rest.
+limit.** That holds for every Hub call, not only the first: the `list_conferences` call, a
+`list_conference_speakers`, a `list_pipeline_news`. If the retry fails too, name the part that call
+would have covered as not checked — "I could not check the conferences in the next 90 days",
+"catalyst not checked - the Intelligence Hub did not answer" — never as nothing found, and carry on
+with the rest.
 
 **If they asked you to PICK something UP, the pick-up gate runs before you plan anything.** "What's
 next on my radar", "pick up my Radar Briefing", "where were we" — any of those, and the first thing
@@ -524,20 +525,14 @@ and a past speaking slot is history, not an opportunity. Today counts as future:
 starts today is still one to go to. A conference with no date is not offered and not listed; leave it
 out without remarking that it has no date.
 
-**Find the conferences.** How depends on what `list_conferences` offers, so read its parameters
-rather than assuming:
-
-- If it takes a date range or an "upcoming" parameter, ask it for the next 90 days.
-- Otherwise, call it once for the current year with `limit` 100. It returns that year's conferences
-  in date order from January, so if its last row starts after the window's end, that one call covers
-  the window. If it does not — in the autumn, when more than 100 conferences come first — call it
-  again once for each of the words Congress, Meeting, Summit, Week, Symposium, Sessions and
-  Conference (`query`, the current year, `limit` 100) and merge the rows on `id`. When the window
-  runs past the year end, add one plain call for the next year, `limit` 100.
-- Check every call the same way: it covers its part of the window when its last row starts after the
-  window's end, or it returned fewer than 100 rows. If a call stops short and there is no sweep for
-  it, say so — "I could only see conferences up to <date>" — rather than implying you checked
-  everything.
+**Find the conferences with one call.** Call `list_conferences` once, with `from` set to today and
+`to` set to today plus 90 days, both as YYYY-MM-DD, and `limit` 100. It returns the conferences that
+start in that window, and every row carries its own Likely Attendee data: `disease_areas`, and
+`likely_attendees_portal_url`, `exact_match_count` and `potential_match_count`. That one call is the
+whole discovery: no call by year, no search by name, and no `get_conference` to find a list. The
+response does not say whether there were more, so if it returns all 100 rows, say so — "The Hub gave
+me its limit of 100 conferences for the next 90 days, so there may be more I could not see" — rather
+than implying you saw everything.
 
 Keep the conferences whose `start_date` falls in the next 90 days, from today, inclusive — a
 conference that starts today is in the window.
@@ -547,28 +542,26 @@ conference whose `event_type` includes Therapeutic Conference is crossed with th
 their connections. Any other conference gets speakers in their patch, from at most three
 `list_conference_speakers` calls across the section.
 
-**Where each therapeutic conference's cut comes from:**
+**Each therapeutic conference's cut is on its own row.** A populated `likely_attendees_portal_url` is
+the cut, and a null one means there is no list. Open nothing more to find it. A row whose URL is set
+while its counts are null still has a cut: cross it like any other, and give no whole-list size for it.
 
-- If the list rows carry the `likely_attendees_portal_url` key, the row is enough: a populated value
-  is the cut, and an explicit null means there is no list. Open nothing more.
-- If the rows do not carry the key, open `get_conference` for the therapeutic conferences only,
-  soonest first, at most six. The ones after the sixth are not opened.
-
-**Never say a conference has no Likely Attendee list until its record says so** — the list row that
-carries the key, or the conference record you opened — and say it only about a conference the user
-asked about. In the briefing, a conference without a cut is simply not mentioned in the Likely
-Attendee part.
+**Never say a conference has no Likely Attendee list until its record says so** — its row, with
+`likely_attendees_portal_url` null — and say it only about a conference the user asked about. In the
+briefing, a conference without a cut is simply not mentioned in the Likely Attendee part.
 
 **The Likely Attendee cut is a prospect list, not a registration list.** It resolves to people whose
-disease areas match the conference's focus, in the countries the Hub lists. Pass its values to
-`athena_contact_find` exactly as they appear in the URL — never through `athena_filter_draft`, which
-will helpfully widen a term and silently change the list.
+disease areas, therapy areas or brands match the conference's focus, in the countries the Hub lists.
+Pass its values to `athena_contact_find` exactly as they appear in the URL — never through
+`athena_filter_draft`, which will helpfully widen a term and silently change the list.
 
 **`source` is a caption, not a filter.** Every Likely Attendee URL carries
 `source=Conference+Speakers`, the portal's label for where the link came from. Drop it when you
 decode the URL, and never send `source` to `athena_contact_find`, which refuses it. Every other value
 goes across exactly as it appears: `diseaseAreas` as `disease_areas`, `isDiseaseAreasExactMatch` as
-`is_disease_areas_exact_match`, and `countries` as `countries`.
+`is_disease_areas_exact_match`, `therapyAreas` as `therapy_areas`, `brand` as `brands`,
+`isBrandsExactMatch` as `is_brands_exact_match`, and `countries` as `countries`. Most lists filter
+by disease areas; some filter by therapy areas or by brands instead, and they cross the same way.
 
 **Cross the cut with their Scope and their connections**, rather than pulling the whole cut, which is
 both the useful answer and the only cheap one. **Take the Scope and Exclusions from the
@@ -580,16 +573,18 @@ match nobody the engine sections found. Add the URL's values to that filter — 
 appear, with `source` left out — and ask only for people with a connection, so every person this
 section names is inside the same patch as the engine sections. Conference play, which reads
 no context, crosses the same cut across the whole company; the briefing never does. The URL as
-it stands is the exact-match cut, and it comes first. The potential-match cut — the same URL with the
-disease-area exact-match parameter removed — is read only when the user asks for it. Whole-list sizes
-come from the Hub's own `exact_match_count` and `potential_match_count`, never from a portal count.
+it stands is the exact-match cut, and it comes first. The potential-match cut — the same URL with its
+exact-match parameter removed — is read only when the user asks for it; a URL with no exact-match
+parameter, such as one that filters by therapy areas, is the only cut there is, and its two counts
+are the same. Whole-list sizes come from the row's own `exact_match_count` and
+`potential_match_count`, never from a portal count.
 
-**Cross the conferences one at a time, never in parallel.** Send each conference's
-`athena_contact_find` only once the one before it has answered: crossings sent together can fail
-where the same crossings sent one after another answer. A crossing that fails or times out is
-retried at most once, on its own, and the retry counts against the call limit. If the retry fails
-too, name that conference as not checked — "I could not check MDS for your connections" — never as
-nothing found, and carry on with the rest.
+**Cross the conferences one at a time, never in parallel.** Take the therapeutic conferences that
+have a list in date order, soonest first, and send each conference's `athena_contact_find` only once
+the one before it has answered: crossings sent together can fail where the same crossings sent one
+after another answer. A crossing that fails or times out is retried at most once, on its own, and
+the retry counts against the call limit. If the retry fails too, name that conference as not checked
+— "I could not check MDS for your connections" — never as nothing found, and carry on with the rest.
 
 **Name the people rather than counting them.** Print at most five people in this section, Likely
 Attendees and speakers together, in the one order above — where a person's date is their
@@ -601,23 +596,29 @@ carry the brand, so call `athena_contact_get` once for each attendee you PRINT, 
 An attendee who already has a number in this briefing is named with it and nothing more — "Katie
 Hernandez (7)" — counts among the five, and needs no read: their brand is on their numbered entry.
 
-**Say what the section checked.** Name the conferences you read — "I checked EADV, EURETINA, MDS,
-NACFC, ACG and ECNP" — and, where the cap left some unopened, name them with their dates: "Not
-opened yet: ESMO 23 Oct, ASH 12 Dec - ask and I'll check them."
+**Say what the section checked.** Name the conferences you crossed — "I checked EADV, EURETINA, MDS,
+NACFC, ACG and ECNP" — and then every therapeutic conference with a list that the call limit
+stopped you reaching, with its dates: "Not
+checked yet: ESMO 23 Oct, ASH 12 Dec - ask and I'll check them." A conference you did not reach
+never reads as one where nobody they know is going.
 
-**The section stops at 30 calls.** Every call made for this section counts, Hub and portal together,
-and 5 of the 30 are kept for the attendees' `athena_contact_get` reads. Stop reading conferences once
-25 calls are used, print the attendees already crossed with their brands, and name what you did not
-check, with dates, the same way as the unopened ones.
+**The section stops at 30 calls.** Every call made for this section counts, Hub and portal together:
+the `whoami`, the one `list_conferences`, up to three `list_conference_speakers`, and every crossing
+and every retry. 5 of the 30 are kept for the attendees' `athena_contact_get` reads, so stop crossing
+once 25 calls are used — about twenty crossings when nothing fails — print the attendees already
+crossed with their brands, and name the therapeutic conferences you did not reach under "Not checked
+yet", with their dates.
 
-**A conference the user names is always opened.** "Check ESMO" is a new request with its own 30
-calls: open it whatever the cap, cross it with their connections and with the Scope and Exclusions
-of the briefing's `scope.applied_filter`, never the terms you submitted, and name its attendees the
-same way — print at most ten, each with its `athena_contact_get` read, except an attendee who already
-has a number in this briefing, who is named with it and nothing more — "Katie Hernandez (7)" —
-counts among the ten, and needs no read. A potential-match cut they ask for is a new request too.
-A named conference's crossing follows the section's rule: one conference at a time, never in
-parallel, a failed crossing retried at most once, and one that fails again named as not checked.
+**A conference the user names is always checked.** "Check ESMO" is a new request with its own 30
+calls. Take its row from the briefing's `list_conferences` call; if it is not there, call
+`list_conferences` once with `query` set to its name and `from` set to today. Then, whatever the cap
+left unchecked, cross it with their connections and with the Scope and Exclusions of the briefing's
+`scope.applied_filter`, never the terms you submitted, and name its attendees the same way — print
+at most ten, each with its `athena_contact_get` read, except an attendee who already has a number in
+this briefing, who is named with it and nothing more — "Katie Hernandez (7)" — counts among the ten,
+and needs no read. A potential-match cut they ask for is a new request too. A named conference's
+crossing follows the section's rule: one conference at a time, never in parallel, a failed crossing
+retried at most once, and one that fails again named as not checked.
 
 ### Section 3: the pipeline edition's brands and catalysts
 

@@ -27,10 +27,10 @@ no idea who this client already knows; with the portal alone it gives contacts b
 are still useful; neither should be presented as the whole play.
 
 **A Hub call that fails or times out is retried at most once, and the retry counts against the call
-limit.** That holds for every Hub call, not only the first: a `list_conferences` sweep word, a
-`get_conference`, a `list_pipeline_news`. If the retry fails too, name the part that call would have
-covered as not checked — "I could not check conferences named Symposium", "catalyst not checked - the
-Intelligence Hub did not answer" — never as nothing found, and carry on with the rest.
+limit.** That holds for every Hub call, not only the first: the `list_conferences` call, a
+`get_conference`, a `list_conference_speakers`. If the retry fails too, name the part that call would
+have covered as not checked — "I could not check the conferences in the next 90 days", "I could not
+check the speakers at BIO-Europe" — never as nothing found, and carry on with the rest.
 
 **Check the Hub is signed in to the same client before you use anything it says.** Compare the
 `hub_client_id` of the company you are working in — on `athena_orient`'s `company`, or on the row
@@ -104,28 +104,22 @@ their records are.
 
 ## Step 1 — Find the conference
 
-A conference the user names is opened directly with `get_conference`, by its name and year or by the
-`id` on a list row. For "what's coming up", or any stretch of dates — "what was on in March 2026?" —
-find the conferences in that window first; "coming up" means the next 90 days, from today,
-inclusive — a conference that starts today is still coming up — and a window in the past is
-answered as history, never as something to go to. How depends on what `list_conferences`
-offers, so read its parameters rather than assuming:
+A conference the user names is found with one `list_conferences` call, `query` set to its name —
+with `from` set to today when they mean the next one, or `year` when they name the year. For "what's
+coming up", or any stretch of dates — "what was on in March 2026?" — call `list_conferences` once
+for that window, with `from` and `to` set to its first and last days, both as YYYY-MM-DD, and
+`limit` 100. "Coming up" means the next 90 days, from today, inclusive — `from` today and `to`
+today plus 90 days; a conference that starts today is still coming up — and a window in the past is
+answered as history, never as something to go to. That one call is the whole discovery: no call by
+year and no name search to fill the window out. The response does not say whether there were more,
+so if it returns all 100 rows, say so — "The Hub gave me its limit of 100 conferences for those
+dates, so there may be more I could not see" — rather than implying you saw everything.
 
-- If it takes a date range or an "upcoming" parameter, ask it for the window.
-- Otherwise, call it once for the window's year with `limit` 100. It returns that year's conferences
-  in date order from January, so if its last row starts after the window's end, that one call covers
-  the window. If it does not — in the autumn, when more than 100 conferences come first — call it
-  again once for each of the words Congress, Meeting, Summit, Week, Symposium, Sessions and
-  Conference (`query`, the same year, `limit` 100) and merge the rows on `id`. When the window runs
-  past the year end, add one plain call for the next year, `limit` 100.
-- Check every call the same way: it covers its part of the window when its last row starts after the
-  window's end, or it returned fewer than 100 rows. If a call stops short and there is no sweep for
-  it, say so — "I could only see conferences up to <date>" — rather than implying you checked
-  everything.
-
-For the conference you are working on, get the dates, the location and the disease-area tags before
-anything else — the full record carries the tags; half the value of this play is telling someone
-early enough that they can still book.
+Every row carries the dates, the city and country, the disease-area tags and the conference's Likely
+Attendee data (step 2), which is what to get before anything else: half the value of this play is
+telling someone early enough that they can still book. Open `get_conference`, by the `id` on its row,
+only for what the row does not carry: the overview, the sponsors, and the therapy-area tags step 3
+needs when there is no published cut.
 
 **Read the date before you offer the conference.** `list_conferences` and `get_conference` carry
 `start_date`; `list_speaker_conferences` carries `start_date` and `year`. `search_speakers` carries
@@ -140,20 +134,22 @@ going to" rather than "who do we meet".
 
 ## Step 2 — Use Athena's own join if it exists
 
-Athena's own join between a conference and the portal is **`likely_attendees_portal_url`**, and
-where you read it depends on what the Hub gives you:
-
-- If the `list_conferences` rows carry the `likely_attendees_portal_url` key, the row is enough: a
-  populated value is the cut, and an explicit null means there is none. Open nothing more for it.
-- If the rows do not carry the key, the conference record does: open `get_conference`.
+Athena's own join between a conference and the portal is **`likely_attendees_portal_url`**, and it
+is on every `list_conferences` row, beside `exact_match_count` and `potential_match_count`: a
+populated value is the cut, and a null one means there is none. Open nothing more to find it. A row
+whose URL is set while its counts are null still has a cut: cross it like any other, and give no
+whole-list size for it.
 
 When it is populated, it is the single most valuable field Athena has for the conference: Athena's
 own team has hand-authored the contact-portal cut for this conference, and it defines two audiences —
 
 - **Exact-Match Prospects** — the URL as it stands. The narrow cut: people Athena has verified as
-  working on the relevant disease areas.
-- **Potential-Match Prospects** — the same URL with the disease-area exact-match parameter removed.
-  The broader cut: people who plausibly work in the area, inferred from their franchise.
+  working on the relevant disease areas or brands.
+- **Potential-Match Prospects** — the same URL with its exact-match parameter removed. The broader
+  cut: people who plausibly work in the area, inferred from their franchise.
+
+A URL with no exact-match parameter, such as one that filters by therapy areas, is the only cut
+there is: its two counts are the same, and there is no broader list to offer.
 
 Prefer this over anything you construct. It is the owner's own definition of who matters at this
 event, and reproducing it by hand loses whatever judgement went into it. Work the Exact-Match
@@ -168,19 +164,21 @@ silently hand you a different list from the one Athena published.
 `source=Conference+Speakers`, the portal's label for where the link came from. Drop it when you
 decode the URL, and never send `source` to `athena_contact_find`, which refuses it. Every other value
 goes across exactly as it appears: `diseaseAreas` as `disease_areas`, `isDiseaseAreasExactMatch` as
-`is_disease_areas_exact_match`, and `countries` as `countries`.
+`is_disease_areas_exact_match`, `therapyAreas` as `therapy_areas`, `brand` as `brands`,
+`isBrandsExactMatch` as `is_brands_exact_match`, and `countries` as `countries`. Most lists filter
+by disease areas; some filter by therapy areas or by brands instead, and they cross the same way.
 
 **Cross it with the client's connections first.** The whole cut can be tens of thousands of people and
 counting it is slow enough to time out; the same cut restricted to people the client already knows
 comes back immediately and is the more useful answer anyway. When you need the size of the whole list,
-take it from the Hub's own `exact_match_count` and `potential_match_count` rather than counting in the
-portal.
+take it from the row's own `exact_match_count` and `potential_match_count` rather than counting in
+the portal.
 
-**Cross the conferences one at a time, never in parallel.** Send each conference's
-`athena_contact_find` only once the one before it has answered: crossings sent together can fail
-where the same crossings sent one after another answer. A crossing that fails or times out is
-retried at most once, on its own, and the retry counts against the call limit. If the retry fails
-too, name that conference as not checked — "I could not check MDS for your connections" — never as
+**Cross the conferences one at a time, never in parallel.** Take them in date order, soonest first,
+and send each conference's `athena_contact_find` only once the one before it has answered: crossings
+sent together can fail where the same crossings sent one after another answer. A crossing that
+fails or times out is retried at most once, on its own, and the retry counts against the call limit.
+If the retry fails too, name that conference as not checked — "I could not check MDS for your connections" — never as
 nothing found, and carry on with the rest.
 
 **Name the people rather than counting them.** For one conference, print at most ten attendees, by
@@ -208,8 +206,8 @@ thing only, whose people: the briefing keeps the people inside the user's Scope,
 play reads no context and crosses the cut across the whole company.
 
 **It is often null.** Conferences nobody has set it on return nothing, and that is normal. Never say a
-conference has no Likely Attendee list until its record says so — the list row that carries the key,
-or the conference record you opened — and say it only about a conference the user asked about:
+conference has no Likely Attendee list until its record says so — its row, with
+`likely_attendees_portal_url` null — and say it only about a conference the user asked about:
 "Athena hasn't published a Likely Attendee list for this one, so here's what I can build". Do not
 invent a URL, do not adapt one from a different conference, and do not present a cut you built as
 though it were Athena's.
@@ -228,29 +226,31 @@ budget:
   "I haven't checked those yet". Speakers already read earlier in this conversation may be reused
   rather than read again, and are named here all the same. Matching a speaker to the client's
   contacts is step 4's approximate match, and a speaker is named whether or not you have made it.
-- **Open at most six.** Where the rows do not carry the key, open `get_conference` for the therapeutic
-  conferences only, soonest first, at most six.
 - **Print at most five attendees across the answer**, by `lead_score_standardized`, each with their
   `athena_contact_get` read, and hold the rest. Say how many, and name the conferences whose people
   you held back, so they know which to ask about: "at least 6 more at EADV and MDS — ask about
   either and I'll name its people".
-- **Say what you checked.** Name the conferences you read — "I checked EADV, EURETINA, MDS, NACFC,
-  ACG and ECNP" — and the ones you did not open, with their dates: "Not opened yet: ESMO 23 Oct, ASH
-  12 Dec - ask and I'll check them." A conference without a cut is simply not mentioned in the Likely
-  Attendee part.
-- **Stop at 30 calls.** Every call counts, Hub and portal together, and 5 of the 30 are kept for the
-  attendees' contact reads. Stop reading conferences once 25 calls are used, print the attendees
-  already crossed with their brands, and name what you did not check, with dates, the same way as
-  the unopened ones.
+- **Say what you checked.** Name the conferences you crossed — "I checked EADV, EURETINA, MDS,
+  NACFC, ACG and ECNP" — and then every therapeutic conference with a list that the call limit
+  stopped you reaching, with its dates: "Not checked yet: ESMO 23 Oct, ASH 12 Dec - ask and I'll
+  check them." A conference you did not reach never reads as one where nobody they know is going. A
+  conference without a cut is simply not mentioned in the Likely Attendee part.
+- **Stop at 30 calls.** Every call counts, Hub and portal together: the `whoami`, the one
+  `list_conferences`, up to three `list_conference_speakers`, and every crossing and every retry.
+  5 of the 30 are kept for the attendees' contact reads, so stop crossing once 25 calls are used —
+  about twenty crossings when nothing fails — print the attendees already crossed with their brands,
+  and name the therapeutic conferences you did not reach under "Not checked yet", with their dates.
 
-**A conference the user names is always opened** — "Who from ESMO specifically?" is a new request
-with its own 30 calls, whatever the cap left unopened before. So is a Potential-Match Prospects cut
-they ask for.
+**A conference the user names is always checked** — "Who from ESMO specifically?" is a new request
+with its own 30 calls, whatever the cap left unchecked before, and so is a Potential-Match Prospects
+cut they ask for. Take its row from the answer's `list_conferences` call, or find it by name as step
+1 says.
 
 ## Step 3 — Build the cut yourself when there is no published one
 
 For a conference the user asked about that has no published cut, reproduce the same shape through
-the contact portal's own filters rather than inventing a new idea of relevance. Call
+the contact portal's own filters rather than inventing a new idea of relevance. Take its disease
+areas from its row and, where the row has none, its therapy areas from `get_conference`. Call
 `athena_filter_options_get` for `contact` first — the values are live and per company, and a disease
 area that exists for one client may not exist for this one.
 
