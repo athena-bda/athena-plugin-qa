@@ -182,6 +182,9 @@ fails or times out is retried at most once, on its own, and the retry counts aga
 If the retry fails too, name that conference as not checked — "I could not check MDS for your connections" — never as
 nothing found, and carry on with the rest.
 
+**Introduce the people from a Likely Attendee cut as Likely Attendees** — "Likely attendees at UEG,
+Barcelona, 17 Oct" — every time you print them, so nobody reads them as people who are going.
+
 **Name the people rather than counting them.** For one conference, print at most ten attendees, by
 `lead_score_standardized`, and hold the rest. For each one you print:
 

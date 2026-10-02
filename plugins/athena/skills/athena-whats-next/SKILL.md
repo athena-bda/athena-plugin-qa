@@ -556,6 +556,9 @@ disease areas, therapy areas or brands match the conference's focus, in the coun
 Pass its values to `athena_contact_find` exactly as they appear in the URL — never through
 `athena_filter_draft`, which will helpfully widen a term and silently change the list.
 
+**Introduce the people from a Likely Attendee cut as Likely Attendees** — "Likely attendees at UEG,
+Barcelona, 17 Oct" — every time you print them, so nobody reads them as people who are going.
+
 **`source` is a caption, not a filter.** Every Likely Attendee URL carries
 `source=Conference+Speakers`, the portal's label for where the link came from. Drop it when you
 decode the URL, and never send `source` to `athena_contact_find`, which refuses it. Every other value
