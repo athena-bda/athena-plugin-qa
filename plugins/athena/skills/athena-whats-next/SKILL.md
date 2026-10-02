@@ -30,7 +30,8 @@ Intelligence Hub is not connected. An unchecked part must never read as one that
 
 **Check the Hub is signed in to the same client before you use anything it says.** Compare the
 `hub_client_id` of the company you are working in — on `athena_orient`'s `company`, or on the row
-you chose from `athena_company_list` — with the `clientId` the Hub's `whoami` returns. If they match,
+you chose from `athena_company_list` — with the `companyId` the Hub's `whoami` returns, never with its
+`clientId`, which names the app that connected, not a client. If they match,
 carry on: there is nothing to say, and the rule on scores below holds all the same. If they differ,
 say once, plainly: "The Intelligence Hub is signed in to a different organisation from Northwind, so
 I'm using only what it publishes for everyone: conference dates and agendas, Likely Attendee lists
