@@ -528,9 +528,12 @@ page. Show what you took from each and what you left out, so nothing is quietly 
 Seed the playbook with the structure Athena's template uses, and fill what the conversation gives
 you:
 
-1. **Company overview and baseline messaging** — what the company does, its differentiators, and two
-   or three baseline emails they are happy with. The Company context's About us is the starting
-   point; build on it rather than asking for it twice.
+1. **Company overview and baseline messaging**, written under three sub-headings: **Company
+   overview** (what the company does, its flagship products and what sets it apart; the Company
+   context's About us is the starting point, so build on it rather than asking for it twice),
+   **Case studies** (two to four client stories from their own material: the context, the problem,
+   what they did and the outcome) and **Baseline email examples** (two or three emails they are
+   happy with, with their subject lines).
 2. **Conditional messaging by data point** — one piece of conditional messaging per therapy area,
    disease area, role type, Intent Signal or brand where they want the framing to change.
 3. **Job change and conference guidance** — what to say to someone who has just moved, been promoted,

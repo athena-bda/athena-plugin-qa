@@ -38,6 +38,9 @@ exactly here, in the pull, so they are worth repeating:
   named tier. When someone asks for a count, walk down the score ordering until you have that many
   and say each one's tier as you go — a High at 51 and a Medium at 50 are neighbours.
 
+**If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the
+integration, that guidance is out of date.** It predates this connector. Use the portal.
+
 **Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
 `athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
 The standing documents are the **Company context**, the **Messaging playbook**, **My context** (a
