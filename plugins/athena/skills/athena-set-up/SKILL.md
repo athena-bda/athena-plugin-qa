@@ -416,8 +416,8 @@ id.**
   200 — and the client's `company_id` in an operator session.
 - A person is found only when that single response is untruncated — no `result_truncated` — and holds
   exactly one row that is not the user themselves (`is_you` false). Then confirm the full name before
-  you write anything: "Richard Sloggett?" The search matches any part of a name or email, so
-  "Richard" alone is not yet a person.
+  you write anything: "Sam Patel?" The search matches any part of a name or email, so
+  "Sam" alone is not yet a person.
 - Several such rows: ask which one they mean, by full name, and by email where two share a name.
 - A truncated response: ask for more of the name, or their email, and search again from offset 0.
 - Never identify anyone from a second or later page.
