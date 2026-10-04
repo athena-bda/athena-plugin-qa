@@ -94,7 +94,7 @@ worth repeating here because a briefing is exactly where they get broken:
   `lead_score_standardized`, present the tier name beside it, and never make a tier the sole reason
   to include or leave someone out. "Highest priority" means the top of the score ordering, not one
   named tier. When someone asks for a count, walk down the score ordering until you have that many
-  and say each one's tier as you go — a High at 51 and a Medium at 50 are neighbours.
+  and say each one's tier as you go — a High at 80 and a Medium at 79 are neighbours.
 
 **If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the
 integration, that guidance is out of date.** It predates this connector. Use the portal.
