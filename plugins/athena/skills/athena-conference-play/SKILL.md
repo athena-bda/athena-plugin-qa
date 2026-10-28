@@ -1,6 +1,6 @@
 ---
 name: athena-conference-play
-description: Turn a conference into a working list of people worth meeting — Athena's conference and speaker intelligence joined to the client's own contacts, as a saved list or view. Use when someone mentions a conference by name, asks who is speaking, asks who they should meet at an event, or asks what is coming up.
+description: Turn a conference into a working list of people worth meeting — Athena's conference and speaker intelligence joined to the client's own contacts, as a saved list or view. Use when someone mentions a conference by name, asks who is speaking, asks who they should meet at an event, or asks what is coming up, including when they ask Aidrian ("Hey Aidrian, who should we meet at ESMO?").
 ---
 
 # Conference play
@@ -204,10 +204,10 @@ Barcelona, 17 Oct" — every time you print them, so nobody reads them as people
   two, never the whole list: the one the user asked about where there is one, and otherwise the first
   two as the field lists them.
 
-The Radar Briefing uses this same cut for conferences in the next 90 days, so the two must agree: same
-URL, same verbatim decode, same connection crossing, people named the same way. They differ in one
-thing only, whose people: the briefing keeps the people inside the user's Scope, while conference
-play reads no context and crosses the cut across the whole company.
+The Radar Briefing's conference section is built by Athena from the same exact-match cut, kept as a
+list, with speakers matched to contacts on their LinkedIn link, and it shows only people inside the
+user's Scope, in three groups, while conference play reads no context and crosses the cut across the
+whole company. So the two can name different people for the same conference; neither is wrong.
 
 **It is often null.** Conferences nobody has set it on return nothing, and that is normal. Never say a
 conference has no Likely Attendee list until its record says so — its row, with
@@ -290,8 +290,8 @@ it carries one. The `lead_score`, `lead_score_tier` and `connection` on those re
 said, whether or not the Hub matches, as "Before you start" says: a speaker's score, tier and "who
 knows them" come only from the contact you match them to below.
 
-**There is no shared identifier between a Hub speaker and a portal contact.** The match is made on
-name and employer, and it is approximate. Two people share a name; someone changed employer last
+**Conference play cannot look a speaker up by their LinkedIn link, so its match is made on name and
+employer, and it is approximate.** Two people share a name; someone changed employer last
 month; a company appears under two spellings. So:
 
 - Say "this looks like the same person as X in your contacts" and let the user confirm. Never state

@@ -1,6 +1,6 @@
 ---
 name: athena-draft-with-playbook
-description: Draft outreach to Athena contacts using your company's Messaging playbook and Athena's email writing guide. Use when someone asks for an email, an intro, a follow-up or a sequence to a contact or a list from Athena, or says "draft with the playbook".
+description: Draft outreach to Athena contacts using your company's Messaging playbook and Athena's email writing guide. Use when someone asks for an email, an intro, a follow-up or a sequence to a contact or a list from Athena, or says "draft with the playbook", including when they ask Aidrian for one.
 ---
 
 # Draft with the playbook
@@ -194,7 +194,8 @@ the guide governs how and the playbook governs what.
 
 **The sender is the person you are drafting for, named and nothing more.** Take their name from
 `athena_orient`'s `you` when it is the user themselves, never from a guess. A job function or title
-never goes in an email: do not ask for one and do not insert one. Where a template sentence in the
+never goes in an email: do not ask for one and do not insert one. (A recipient's title as Athena holds
+it can end in `{LL}`, Athena's internal mark for a Launch Leader: never copy it into a draft.) Where a template sentence in the
 playbook has a `[function]` slot, drop the clause the slot sits in — "I lead [function] at Halcyon,
 and I wanted to share ..." becomes "I wanted to share ..." — and where nothing sensible is left of the
 sentence, drop the whole sentence. Never leave the placeholder in a draft, and never leave a stub such

@@ -1,6 +1,6 @@
 ---
 name: athena-set-up
-description: Set up or tune Athena — record what your company sells and who it sells to, which companies each person covers, and the Messaging playbook you draft from, so every later Athena conversation is already scoped. Use when someone says "set me up", "set up Athena", "tune my context", "set up a colleague's context", "help me build my messaging playbook", or when a briefing comes back too broad because nobody has said what the user actually cares about.
+description: Set up or tune Athena — record what your company sells and who it sells to, which companies each person covers, and the Messaging playbook you draft from, so every later Athena conversation is already scoped. Use when someone says "set me up", "set up Athena", "tune my context", "set up a colleague's context", "help me build my messaging playbook", when a briefing comes back too broad because nobody has said what the user actually cares about, or when someone asks Aidrian to set Athena up.
 named-terms:
   briefing: Radar Briefing
   pickup-phrase: What's next on my radar
@@ -208,7 +208,7 @@ briefing and draft from here on starts from what you sell and who you sell to. I
 Company context first, then each person's own context." Whenever you move from one document to the
 next, say which one you are gathering now ("Now your own context").
 
-Cover all seven, in this order, every time. Ask each one; do not wait for the user to notice a topic
+Cover all eight, in this order, every time. Ask each one; do not wait for the user to notice a topic
 was skipped. Where the scoring rules already answer a topic, propose the shortlist from them (Step 3)
 rather than asking cold. If they answer several topics at once, take the lot and confirm each
 remaining one in a line rather than making them repeat themselves.
@@ -225,25 +225,34 @@ remaining one in a line rather than making them repeat themselves.
    European Region are two different values with two different meanings, and merging them loses the
    distinction. Then ask separately whether there is any remit they definitely do not want. Only that
    second answer becomes an exclusion.
-5. **Therapy areas.** Which ones matter most.
-6. **Disease areas that are very high priority.** This steers suggestions and drafting; it never
+5. **Priority locations.** The cities where they most want to meet people, each with its country
+   ("Boston, United States"); this is not a remit. For each city, draft the neighbouring towns that
+   belong with it — "For Boston I'd include Cambridge, Waltham, Lexington, Brookline and Somerville.
+   Any to add or drop?" — and write down only the towns they confirm. Ground the country against the
+   contact `countries` facet and write it as the facet names it. In a briefing a priority location
+   moves people based there up among people with the same lead score, and flags conferences held
+   there; it never filters anyone out, so it is never written under Scope.
+6. **Therapy areas.** Which ones matter most.
+7. **Disease areas that are very high priority.** This steers suggestions and drafting; it never
    narrows the briefing. Do not turn it into a filter that leaves anyone out.
-7. **Brands.** "Are there any very high priority brands you'd like to track?"
+8. **Brands.** "Are there any very high priority brands you'd like to track?"
 
-Two rules run across all seven:
+Two rules run across all eight:
 
 - **Priorities are not exclusions.** Everything above steers what Athena suggests and drafts, and
-  the handful of very high priority companies also leads the briefing. Nothing above removes anyone
-  from view unless the user named a specific value they do not want — for example an African or a
-  Local affiliate remit. Ask both questions and keep the answers apart.
+  the priority locations also order people in the briefing. Nothing above removes anyone from view
+  unless the user named a specific value they do not want — for example an African or a Local
+  affiliate remit. Ask both questions and keep the answers apart.
 - **Never exclude on an unknown.** A contact whose remit, therapy area or disease area is N/A is a
   contact Athena has no information about. They stay in.
 
 **Ground the companies topic in Athena's Key Companies.** Athena's monthly tracking covers a list of
 Key Companies. Find it with `athena_list_find`, `entity_kind` `account`, `search` "Athena BDA Key
-Companies", and keep only a list whose name is exactly that.
+Companies", and keep only a list whose name is exactly that and whose `visibility` is not
+`Private`: a list your company made itself can carry the same name, and Athena's is the one shared
+with you.
 
-- **Exactly one such list is visible** — ground the topic in it. Any company you suggest comes from
+- **Exactly one such list** — ground the topic in it. Any company you suggest comes from
   its members. Check each company the user names with `athena_account_find`, filtering on `list_ids`
   (that list's id) with a `search` for the name; if their short name finds nothing, try the name
   Athena holds it under (Johnson & Johnson for J&J) before you decide it is not a member.
@@ -276,7 +285,7 @@ briefing that uses it.
 Do not ask which lead score tier the briefings should cover. A lead score tier is a label on what the
 client's own scoring produced, not a question for the user — unlike the company tiers in topic 1.
 
-**About us.** After the seven topics, gather the Company context's opening: an **About us** of three
+**About us.** After the eight topics, gather the Company context's opening: an **About us** of three
 to five sentences — what they do, who they serve, and what sets them apart. Offer to draft it from
 their website: "Shall I draft a short About us from your website?" If you do not have its address,
 ask for it. Draft it only from the page itself, read in this conversation. **A web tool that is
@@ -289,7 +298,8 @@ with the rest of the Company context before anything is published.
 
 Write what you learn into the context in three labelled parts, so a later skill can tell them apart:
 **Scope** (the companies covered, role types, seniority), **Priorities** (the very high priority
-companies, company tiers, therapy areas, disease areas, remits, Intent Signals, brands) and
+companies, company tiers, therapy areas, disease areas, remits, priority locations, Intent Signals,
+brands) and
 **Exclusions** (only values the user named as unwanted). Briefings and views filter on Scope and
 Exclusions, and nothing under Priorities filters.
 
@@ -299,12 +309,14 @@ into shared words: "Commercial and Launch Excellence" can be read as the role ty
 Launch Excellence, or Commercial Excellence plus Launch Excellence — all four are real — and two
 readings brief two different patches. Write "Role types: Commercial, Launch Excellence."
 
-**Only the very high priority companies change a briefing's order.** Their people come straight
-after connections. Everything else under Priorities — therapy areas, disease areas, remits, Intent
-Signals, brands — steers your suggestions and drafting, as company tiers do, and never the order.
-When you tell the user what a context does, say exactly that: "Amgen and J&J lead your briefings;
-Oncology, Europe and the United States steer what I suggest and how I draft." Never say a therapy
-area, disease area, remit, Intent Signal or brand puts anyone at the top or moves them up a list.
+**Only priority locations change the order of people in a briefing,** and only among people with the
+same lead score in a group. Priority therapy areas, disease areas and the Intent Signals that describe
+a drug choose which drug news leads Pipeline News Updates; they never move a person. Very high
+priority companies, company tiers, remits and brands steer your suggestions and drafting. When you
+tell the user what a context does, say exactly that: "Boston moves people based there up your
+briefing when scores tie; Oncology decides which drug news leads it; Amgen and J&J steer what I
+suggest and how I draft." Never say a therapy area, disease area, remit, Intent Signal or brand puts
+anyone at the top or moves them up a list.
 
 **Every context takes those three headings — the company's, and every person's.** Use the three
 words themselves as headings in every context this interview writes. The Company context is About us
@@ -327,8 +339,8 @@ says their whole company sells to a fixed set of them. In a person's context, ev
 actually cover goes under Scope — including the ones they call their priorities — because Scope is
 what narrows their briefing, and a covered company missing from it drops out of everything they see.
 Each of the company's very high priority companies that the person covers, and any other company they
-cover that they say matters most, goes under their Priorities as well, where it only ranks: it leads
-their briefing and never narrows it. A company under Priorities is never read as one they cover, so
+cover that they say matters most, goes under their Priorities as well, where it steers suggestions
+and drafting and never narrows anything. A company under Priorities is never read as one they cover, so
 never file a covered company under Priorities alone, and never under a heading of your own such as
 "My companies". Covered companies narrow. Always.
 
@@ -349,10 +361,17 @@ Company tiers: Small Pharma and Biotech matter most.
 Therapy areas: Oncology, Immunology.
 Intent Signals: the ones this client's own facet actually returns.
 Brands: only the very high priority ones they named.
+Priority locations:
+- Boston, United States: Cambridge, Waltham, Lexington, Brookline, Somerville
+- London, United Kingdom: Slough, Stevenage, Hatfield
 
 ## Exclusions
 Geographical remits: Local Affiliate — named by them as unwanted.
 ```
+
+Write each priority location on its own line, exactly in that shape — a city, its country, a colon,
+then the confirmed towns separated by commas — because the briefing reads it line by line. A city
+with no towns ends at its country.
 
 Then a set of things that are **not portal filters** but belong in the Company context as prose,
 because they steer drafting and the intelligence side rather than a search: drug lifecycle stage,
@@ -448,13 +467,19 @@ turn, and nothing new about a company already warned about.
 Write each person's context in the same three labelled parts as the company's — **Scope**,
 **Priorities**, **Exclusions** — and use step 4's mapping field for field, not just its headings:
 **Scope is the companies this person covers, role types and seniority; Priorities is the very high
-priority companies among them, therapy areas, disease areas, geographical remits, Intent Signals and
-brands; Exclusions is only the values this person named as unwanted. Company tiers stay in the
+priority companies among them, therapy areas, disease areas, geographical remits, priority locations,
+Intent Signals and brands; Exclusions is only the values this person named as unwanted. Company tiers stay in the
 Company context only: they are the company's answer, not this person's.** Nothing about seeding
 changes that mapping, or step 4's rule that each value under Scope and Exclusions is written exactly
 as the portal names it, as an item of its own. It is easier to break here than in the Company context, because the person you are
 writing about is usually not in the room to notice that their territory has been filed in the wrong
 part.
+
+**A person's priority locations are the company's unless they differ.** Write only the difference,
+one city to a line, under their Priorities: "Priority locations, added: Basel, Switzerland:
+Allschwil, Muttenz" for a city the company does not list, with its confirmed towns, and "Priority
+locations, removed: London, United Kingdom" for one of the company's they do not want. When nothing
+differs, write nothing about locations in their context.
 
 **A remit under Scope silently narrows everything they will ever see.** The skills that read a
 person's context FILTER on Scope and Exclusions, and never on Priorities. Write "Territory. Remits
@@ -484,6 +509,8 @@ Therapy areas: Oncology, Immunology.
 Disease areas: non-small cell lung cancer.
 Intent Signals: the ones this client's own facet actually returns.
 Brands: only the very high priority ones they named.
+Priority locations, added: Basel, Switzerland: Allschwil, Muttenz
+Priority locations, removed: London, United Kingdom
 
 ## Exclusions
 Geographical remits: Local Affiliate — named by them as unwanted.

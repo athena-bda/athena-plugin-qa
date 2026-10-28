@@ -1,6 +1,6 @@
 ---
 name: athena-rep-first-contact
-description: The first time a rep connects, show them what Athena has set up for them — read their own context back, then propose a few saved views tailored to their patch, each created with ONE confirmation and owned by them. Use when someone asks what's set up for them, how to get started, what to look at first, "what have you got for me", or when a rep is new to Athena.
+description: The first time a rep connects, show them what Athena has set up for them — read their own context back, then propose a few saved views tailored to their patch, each created with ONE confirmation and owned by them. Use when someone asks what's set up for them, how to get started, what to look at first, "what have you got for me", or when a rep is new to Athena, including when they ask Aidrian what is set up for them.
 named-terms:
   briefing: Radar Briefing
   pickup-phrase: What's next on my radar
@@ -108,7 +108,7 @@ Propose **two to four**, no more, each drawn straight from their context.
 **Every view's filter is built from the context's Scope and Exclusions only** — the companies they
 cover (`account_names`), the role types and seniority they sell to, plus the values they named as
 unwanted. The very high priority companies, company tiers, therapy areas, disease areas,
-geographical remits, countries, Intent Signals and brands are **Priorities**: they decide what the
+geographical remits, countries, priority locations, Intent Signals and brands are **Priorities**: they decide what the
 rep looks at first, never who is in the view. That holds for every view you propose, not only the
 first. A view narrowed by a priority quietly stops showing people the rep is meant to cover, and a
 saved view is where that failure lives longest — it re-runs every time they open the portal, and

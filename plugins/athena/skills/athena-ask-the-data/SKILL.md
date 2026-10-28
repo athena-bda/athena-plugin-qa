@@ -1,6 +1,6 @@
 ---
 name: athena-ask-the-data
-description: Answer a plain-language request against Athena's data — find people and companies, turn a description into a counted, saved list or view, and export it. Use when someone wants to pull, filter, look up, count, build, refine, save or export contacts, companies, Company Lists, lists or views ("show me…", "who are our…", "build me a list of…", "how many…", "export that").
+description: Answer a plain-language request against Athena's data — find people and companies, turn a description into a counted, saved list or view, and export it. Use when someone wants to pull, filter, look up, count, build, refine, save or export contacts, companies, Company Lists, lists or views ("show me…", "who are our…", "build me a list of…", "how many…", "export that"), including when they ask Aidrian ("Hey Aidrian, how many…").
 ---
 
 # Ask the data
@@ -31,6 +31,8 @@ exactly here, in the pull, so they are worth repeating:
   ruled-out person's score is 0 too, so the TIER is the only thing that tells the two apart. N/A on a
   data field — therapy area, remit, and so on — is a different thing entirely: it means Athena has no
   information. Say "unknown", and never exclude anyone on it. Never fold absent into zero.
+- **A job title can end in `{LL}`.** That is how Athena marks a Launch Leader, not part of the
+  title: show the title without it and say "Launch Leader" beside it. Never print the marker itself.
 - **Tier names only**, exactly as they arrive. Never turn one into a number, a band or a percentile,
   and never recompute a score. A tier is a LABEL, never a filter of its own: prioritise by
   `lead_score_standardized`, present the tier name beside it, and never make a tier the sole reason
@@ -40,6 +42,10 @@ exactly here, in the pull, so they are worth repeating:
 
 **If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the
 integration, that guidance is out of date.** It predates this connector. Use the portal.
+
+**Multi-signal leads are the Radar Briefing's job.** If someone asks for multi-signal leads, or for
+people with a job change and news or a conference, do not build them from filters: Athena finds them
+with `athena_changes`, as the Radar Briefing does on request.
 
 **Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
 `athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
