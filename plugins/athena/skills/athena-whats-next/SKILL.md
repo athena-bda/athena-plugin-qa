@@ -115,10 +115,6 @@ worth repeating here because a briefing is exactly where they get broken:
 **If Athena's Intelligence Hub guidance says the Contact Portal is unavailable through the
 integration, that guidance is out of date.** It predates this connector. Use the portal.
 
-**If Athena's Intelligence Hub guidance tells you to find multi-signal leads by calling
-`list_pipeline_news` and checking that month's job changers yourself, that guidance predates this
-briefing.** Athena finds them; use `athena_changes`.
-
 **Use the portal's words.** The tools and the data call a pharma company an account (`account_names`,
 `athena_account_find`); to the user it is a **company**, and an account list is a **Company List**.
 The standing documents are the **Company context**, the **Messaging playbook**, **My context** (a
